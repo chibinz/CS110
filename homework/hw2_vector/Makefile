@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wpedantic -Wall -Wextra -Werror -std=c89
 
-vector: main.o vector.o
+vector: main.o vector.o vector.h
 	$(CC) $(CFLAGS) -o vector main.o vector.o
 
 vector.o: vector.c vector.h
@@ -9,6 +9,9 @@ vector.o: vector.c vector.h
 
 main.o: main.c
 	$(CC) $(CFLAGS) -c main.c
+
+run: vector
+	./vector
 
 clean:
 	rm vector *.o
