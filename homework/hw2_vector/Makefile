@@ -1,17 +1,20 @@
 CC=gcc
 CFLAGS=-Wpedantic -Wall -Wextra -Werror -std=c89
 
-vector: main.o vector.o vector.h
-	$(CC) $(CFLAGS) -o vector main.o vector.o
+vector: test.o vector.o vector.h
+	$(CC) $(CFLAGS) -o vector test.o vector.o
 
 vector.o: vector.c vector.h
 	$(CC) $(CFLAGS) -c vector.c
 
-main.o: main.c
-	$(CC) $(CFLAGS) -c main.c
+test.o: test.c
+	$(CC) $(CFLAGS) -c test.c
 
 run: vector
 	./vector
 
+tar:
+	tar -cvf hw2.tar vector.c dynamiclib.sh staticlib.sh
+
 clean:
-	rm vector *.o
+	rm -f vector staticvector dynamicvector *.o *.a *.so *.tar

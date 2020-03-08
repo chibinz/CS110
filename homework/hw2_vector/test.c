@@ -37,6 +37,10 @@ int main(void)
     Vector* v = malloc(sizeof(Vector));
     Vector* w = malloc(sizeof(Vector));
 
+    Vector* x = NULL;
+
+    vector_init(x, 2, 4);
+
     vector_init(v, 2, sizeof(a));
     vector_copy(w, v);
 

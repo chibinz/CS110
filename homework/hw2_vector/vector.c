@@ -3,11 +3,12 @@
 #include <stdbool.h>
 #include "vector.h"
 
+#define check_null(ptr) if(ptr==NULL){return VECTOR_ERROR;}
+
 /***** METHODS *****/
 /* For following methods which has return type INT, return VECTOR_ERROR 
    if any error(s) occured, return VECTOR_SUCCESS for operation is done 
    successfully. */
-
 static bool vector_is_full(Vector* vector)
 {
     return vector->size == vector->capacity;
@@ -43,6 +44,8 @@ static size_t vector_data_size(Vector* vector)
 /* Constructor, set CAPACITY and ELEMENT_SIZE to VECTOR, alloc memory for DATA */
 int vector_init(Vector* vector, size_t capacity, size_t element_size)
 {
+    check_null(vector);
+
     if(capacity < VECTOR_MINIMUM_CAPACITY) return VECTOR_ERROR;
 
     vector->size = 0;
@@ -57,6 +60,9 @@ int vector_init(Vector* vector, size_t capacity, size_t element_size)
    You should copy the memory, instead of changing the pointers only. */
 int vector_copy(Vector* destination, Vector* source)
 {
+    check_null(destination);
+    check_null(source);
+
     if(destination->data != VECTOR_UNINITIALIZED) return VECTOR_ERROR;
 
     memcpy(destination, source, sizeof(Vector));
@@ -70,6 +76,8 @@ int vector_copy(Vector* destination, Vector* source)
 /* Destructor, please free all memory allocated */
 int vector_destroy(Vector* vector)
 {
+    check_null(vector);
+
     free(vector->data);
 
     return VECTOR_SUCCESS;
@@ -78,6 +86,9 @@ int vector_destroy(Vector* vector)
 /* Insertion */
 int vector_push_back(Vector* vector, void* element)
 {
+    check_null(vector);
+    check_null(element);
+
     vector_attempt_grow(vector);
 
     memcpy((char*)vector->data + vector_data_size(vector), element, vector->element_size);
@@ -89,6 +100,9 @@ int vector_push_back(Vector* vector, void* element)
 
 int vector_push_front(Vector* vector, void* element)
 {
+    check_null(vector);
+    check_null(element);
+
     vector_attempt_grow(vector);
 
     memmove((char*)vector->data + vector->element_size, vector->data, vector_data_size(vector));
@@ -106,6 +120,8 @@ int vector_insert(Vector* vector, size_t index, void* element)
     char* addr;         /* Address of data corresponding to index */
     size_t move_size;   /* Size of data to be moved right in bytes */
 
+    check_null(vector);
+    check_null(element);
     if(index >= vector->size) return VECTOR_ERROR;
 
     vector_attempt_grow(vector);
@@ -127,6 +143,8 @@ int vector_assign(Vector* vector, size_t index, void* element)
 {
     char* addr;
 
+    check_null(vector);
+    check_null(element);
     if(index >= vector->size) return VECTOR_ERROR;
 
     addr = (char*)vector->data + vector->element_size * index;
@@ -141,6 +159,7 @@ int vector_assign(Vector* vector, size_t index, void* element)
 /* Delete the right-most element */
 int vector_pop_back(Vector* vector)
 {
+    check_null(vector);
     if(vector_is_empty(vector)) return VECTOR_ERROR;
 
     vector->size -= 1;
@@ -151,6 +170,7 @@ int vector_pop_back(Vector* vector)
 /* Delete element at INDEX = 0, move all other elements left by one */
 int vector_pop_front(Vector* vector)
 {
+    check_null(vector);
     if(vector_is_empty(vector)) return VECTOR_ERROR;
 
     vector->size -= 1;
@@ -166,6 +186,7 @@ int vector_erase(Vector* vector, size_t index)
     char* addr;         /* Address of data corresponding to index */
     size_t move_size;   /* Size of data to be moved left in bytes */
 
+    check_null(vector);
     if(index >= vector->size) return VECTOR_ERROR;
 
     /* Move data to the left by one element */
@@ -181,6 +202,8 @@ int vector_erase(Vector* vector, size_t index)
 /* Delete all elements in the vector */
 int vector_clear(Vector* vector)
 {
+    check_null(vector);
+
     vector->size = 0;
 
     return VECTOR_SUCCESS;
@@ -208,19 +231,23 @@ void* vector_back(Vector* vector)
 /* Information */
 /* Returns size of VECTOR */
 size_t vector_size(const Vector* vector)
-{
+{    
     return vector->size;
 }
 
 /* Returns TRUE if VECTOR is empty(i.e. size == 0) */
 bool vector_is_empty(const Vector* vector)
 {
+    check_null(vector);
+
     return vector->size == 0;
 }
 
 /* Memory management */
 int vector_resize(Vector* vector, size_t new_size)
 {
+    check_null(vector);
+    
     while(vector->capacity < new_size) vector_grow(vector);
 
     vector->size = new_size;
@@ -271,7 +298,7 @@ void iterator_increment(Iterator* iterator)
 /* Similar to `operator--()' in C++ */
 void iterator_decrement(Iterator* iterator)
 {
-    iterator->pointer = (char*)iterator->pointer + iterator->element_size;
+    iterator->pointer = (char*)iterator->pointer - iterator->element_size;
 }
 
 /* Similar to `operator==(Iterator second)' in C++ */
