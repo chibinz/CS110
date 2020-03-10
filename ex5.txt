@@ -1,2 +1,0 @@
-gcc ex5.c -Wpedantic -Wall -Wextra -Werror -std=c89 -m32
-gcc ex5.c -Wpedantic -Wall -Wextra -Werror -std=c89 -m64

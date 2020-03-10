@@ -1,12 +1,13 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-#define check_size( t ) (printf( "Size of %s :  %ld \n", #t  , ( long int ) sizeof( t )))
+#define check_size(t) (printf("Size of %s :  %ld \n", #t, (long int)sizeof(t)))
 
-int main(){
+int main()
+{
     check_size(char);
     check_size(short);
     check_size(short int);
