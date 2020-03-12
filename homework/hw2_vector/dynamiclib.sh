@@ -1,5 +1,3 @@
-#! /bin/sh
-
-gcc -o test.o -c test.c
-gcc -shared -o libvector.so -fPIC vector.c
-gcc -o dynamicvector test.o -L. -lvector
+gcc -fPIC -o vector.o -c vector.c
+gcc -shared -o libvector.so vector.o
+gcc test.c -o dynamicvector  -L. -lvector -Wl,-rpath=.

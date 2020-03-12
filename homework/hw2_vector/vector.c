@@ -110,7 +110,21 @@ int vector_push_back(Vector* vector, void* element)
 /* Insert in front */
 int vector_push_front(Vector* vector, void* element)
 {
-    return vector_insert(vector, 0, element);
+    /* Error handling */
+    if(vector == NULL) return VECTOR_ERROR;
+    if(element == NULL) return VECTOR_ERROR;
+
+    vector_attempt_grow(vector);
+
+    /* Shift orginal data right */
+    if(vector->size > 0)
+        memmove((char*)vector->data + vector->element_size, vector->data, vector_data_size(vector));
+
+    /* Copy element into buffer */
+    memcpy(vector->data, element, vector->element_size);
+    vector->size += 1;
+
+    return VECTOR_SUCCESS;
 }
 
 /* Insert ELEMENT to INDEX, move all elements which index > INDEX right by one time */
@@ -172,7 +186,19 @@ int vector_pop_back(Vector* vector)
 /* Delete element at INDEX = 0, move all other elements left by one */
 int vector_pop_front(Vector* vector)
 {
-    return vector_erase(vector, 0);
+    /* Error handling */
+    if(vector == NULL) return VECTOR_ERROR;
+    if(vector->data == VECTOR_UNINITIALIZED) return VECTOR_ERROR;
+    if(vector_is_empty(vector)) return VECTOR_ERROR;
+
+    /* Decrement size */
+    vector->size -= 1;
+
+    /* Shift data left */
+    if(vector->size > 0)
+        memmove(vector->data, (char*)vector->data + vector->element_size, vector_data_size(vector));
+
+    return VECTOR_SUCCESS;
 }
 
 /* Delete element at INDEX, move all rhs elements left by one */
@@ -190,7 +216,9 @@ int vector_erase(Vector* vector, size_t index)
     /* Move data to the left by one element */
     addr = vector_get(vector, index);
     move_size = (vector->size - index - 1) * vector->element_size;
-    memmove(addr, addr + vector->element_size, move_size);
+
+    if(move_size > 0)
+        memmove(addr, addr + vector->element_size, move_size);
 
     /* Decrement size */
     vector->size -= 1;
@@ -269,16 +297,17 @@ Iterator vector_begin(Vector* vector)
     Iterator i;
 
     /* Error handling */
-    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED)
+    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED || vector_is_empty(vector))
     {
         i.element_size = 0;
         i.pointer = NULL;
 
         return i;
     }
+
     /* Set attribute */
     i.element_size = vector->element_size;
-    i.pointer = vector_front(vector);
+    i.pointer = vector->data;
 
     return i;
 }
@@ -289,7 +318,7 @@ Iterator vector_end(Vector* vector)
     Iterator i;
 
     /* Error handling */
-    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED)
+    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED || vector_is_empty(vector))
     {
         i.element_size = 0;
         i.pointer = NULL;
@@ -299,7 +328,7 @@ Iterator vector_end(Vector* vector)
 
     /* Set attribute */
     i.element_size = vector->element_size;
-    i.pointer = (char*)vector_back(vector) + vector->element_size;
+    i.pointer = (char*)vector->data + vector->size * vector->element_size;
 
     return i;
 }
@@ -310,7 +339,7 @@ Iterator vector_iterator(Vector* vector, size_t index)
     Iterator i;
 
     /* Error handling */
-    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED)
+    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED || vector_is_empty(vector) || index >= vector->size)
     {
         i.element_size = 0;
         i.pointer = NULL;
