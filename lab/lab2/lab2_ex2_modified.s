@@ -36,6 +36,18 @@ loop:
 	beq t5, x0, exit
 	# Exit loop at '0'
 	add t6, t2, t3
+
+    andi a0, t0, 1
+    beq a0, x0, even
+    li t5, 1
+    j end
+    # t5 = 1
+
+even:
+    slli t5, t5, 1
+    # t5 *= 2
+
+end:
 	sw t5, 0(t6)
 	# t2[t3] = t5
 	addi t0, t0, 1
