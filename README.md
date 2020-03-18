@@ -15,7 +15,7 @@ The projects are part of your design project worth 2 credit points. As such they
 Run the following commands to pull the framework to your local repository. Please be familiar with basic operations of `git` before.
 
 ```
-git remote add framework http://autolab.sist.shanghaitech.edu.cn/gitlab/cs110_projects/p1_framework.git
+git remote add framework http://autolab.sist.shanghaitech.edu.cn/gitlab/cs110/p1_framework.git
 git pull framework master:master
 ```
 
