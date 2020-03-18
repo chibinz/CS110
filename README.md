@@ -57,4 +57,4 @@ git push origin master:master
 Note that:
 1. After finished, you should push to `origin` this time. (NOT `framework`).
 2. We only grade code on the `master` branch.
-3. Changes out of `part1.c`, `part2.c`, and `utils.c` will NOT be considered by autograder.
+3. Changes made out of `part1.c`, `part2.c`, and `utils.c` will NOT be considered by autograder.
