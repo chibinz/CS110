@@ -25,6 +25,7 @@ You can check if you already have the following files after pulling.
 .
 ├── Makefile
 ├── README.md
+├── autolab.txt
 ├── part1.c
 ├── part2.c
 ├── riscv.c
