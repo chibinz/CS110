@@ -1,0 +1,3 @@
+[submodule "project/project1_emulator"]
+	path = project/project1_emulator
+	url = http://autolab.sist.shanghaitech.edu.cn/gitlab/cs110_projects/p1_huiwy_zhangchb1.git
