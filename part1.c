@@ -240,8 +240,29 @@ void write_itype_except(Instruction inst)
 
 void write_load(Instruction inst) 
 {
-    switch(0) 
+    unsigned int func3;
+    func3 = (inst.opcode.opcode >> 12) % 8;
+    switch(func3) 
     { 
+        case 0:     /* .. is lb. */
+            print_load("lb", inst);
+            break;
+
+        case 1:     /* .. is lh. */
+            print_load("lh", inst);
+            break;
+
+        case 2:     /* .. is lw. */
+            print_load("lw", inst);
+            break;
+
+        case 4:     /* .. is lbu. */
+            print_load("lbu", inst);
+            break;
+        
+        case 5:     /* .. is lhu. */
+            print_load("lhu", inst);
+            break;
 
         default:
             handle_invalid_instruction(inst);
