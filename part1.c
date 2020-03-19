@@ -72,13 +72,10 @@ void decode_instruction(Instruction inst)
 
 void write_rtype(Instruction inst) 
 {
-    unsigned int tmp, func3, func7;
-    char *name;
-    int flag = 0;
+    unsigned int func3, func7;
     func3 = (inst.opcode.opcode >> 12) % 8;
     func7 = (inst.opcode.opcode >> 25) % 128;
     
-
     switch(func3) 
     {
         case 0:     /* func3 = 0x0 is add, mul or sub. */
@@ -184,13 +181,60 @@ void write_rtype(Instruction inst)
 void write_itype_except(Instruction inst) 
 {
     int shiftOp;
+    unsigned int func3, func7;
+    func3 = (inst.opcode.opcode >> 12) % 8;
+    func7 = (inst.opcode.opcode >> 25) % 128;
     shiftOp = -1;
-    switch(0) 
+
+    switch(func3) 
     { 
+    case 0:     /* func3 = 0x0 is addi */
+        print_itype_except_load("addi", inst);
+        break;
+
+    case 1:     /* func3 = 0x1 is slli. */
+        print_itype_except_load("slli", inst);
+        break;
+
+    case 2:     /* func3 = 0x2 is slti. */
+        print_itype_except_load("slti", inst);
+        break;
+
+    case 3:     /* ........... is sltiu. */
+        print_itype_except_load("sltiu", inst);
+        break;
+
+    case 4:     /* ... is xori.*/
+        print_itype_except_load("xori", inst);
+        break;
+    
+    case 5:     
+        switch (func7)
+        {
+        case 0: /* ... is srli. */
+            print_itype_except_load("srli", inst);
+            break;
+        
+        case 32:/* ... is srai. */
+            print_itype_except_load("srai", inst);
+            break;
 
         default:
             handle_invalid_instruction(inst);
-            break;  
+            break;
+        }
+    
+    case 6:     /* .. is ori. */
+        print_itype_except_load("ori", inst);
+        break;
+    
+    case 7:     /* ... is andi. */
+        print_itype_except_load("andi", inst);
+        break;
+
+    default:
+        handle_invalid_instruction(inst);
+        break;  
     }
 }
 
