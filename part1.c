@@ -272,8 +272,21 @@ void write_load(Instruction inst)
 
 void write_store(Instruction inst) 
 {
-    switch(0) 
+    unsigned int func3;
+    func3 = (inst.opcode.opcode >> 12) % 8;
+    switch(func3) 
     { 
+        case 0:     /* .. is sb. */
+            print_store("sb", inst);
+            break;
+
+        case 1:     /* .. is sh. */
+            print_store("sh", inst);
+            break;
+
+        case 2:     /* .. is sw. */
+            print_store("sw", inst);
+            break;
 
         default:
             handle_invalid_instruction(inst);
@@ -283,9 +296,33 @@ void write_store(Instruction inst)
 
 void write_branch(Instruction inst) 
 {
-    switch(0) 
-    { /* What do we switch on? */
-        /* YOUR CODE HERE */
+    unsigned int func3;
+    func3 = (inst.opcode.opcode >> 12) % 8;
+    switch(func3) 
+    {
+        case 0:     /* .. is beq. */
+            print_branch("beq", inst);
+            break;
+
+        case 1:     /* .. is bne. */
+            print_branch("bne", inst);
+            break;
+
+        case 4:     /* .. is blt. */
+            print_branch("blt", inst);
+            break;
+
+        case 5:     /* .. si bge. */
+            print_branch("bge", inst);
+            break;
+        
+        case 6:     /* .. is bltu. */
+            print_branch("bltu", inst);
+            break;
+
+        case 7:     /* .. is begu. */
+            print_branch("bgeu", inst);
+            break;
 
         default:
             handle_invalid_instruction(inst);
@@ -297,9 +334,17 @@ void write_branch(Instruction inst)
 
 void write_utype(Instruction inst) 
 {
-    switch(0) 
-    { /* What do we switch on? */
-        /* YOUR CODE HERE */
+    unsigned int opcode;
+    opcode = inst.opcode.opcode % 128;
+    switch(opcode) 
+    { 
+        case 23:    /* .. is auipc. */
+            print_utype("auipc", inst);
+            break;
+            
+        case 55:    /* .. is lui. */
+            print_utype("lui", inst);
+            break;
 
         default:
             handle_invalid_instruction(inst);
@@ -310,20 +355,25 @@ void write_utype(Instruction inst)
 
 void write_jal(Instruction inst UNUSED) 
 {
-    /* YOUR CODE HERE */
+    unsigned int rd;
+    rd = (inst.opcode.opcode >> 7) % 32;
 
+    printf(JAL_FORMAT, rd, get_jump_offset(inst));
 }
 
 void write_jalr(Instruction inst UNUSED) 
 {
-    /* YOUR CODE HERE */
+    unsigned int rd, rs1;
+    rd = (inst.opcode.opcode >> 7) % 32;
+    rs1 = (inst.opcode.opcode >> 12) % 32;
 
+    printf(ITYPE_FORMAT, "jalr", rd, rs1);
 }
 
 void write_ecall(Instruction inst UNUSED) 
 {
-    /* YOUR CODE HERE */
-
+    /* Maybe here needs to check whether func3 or func7 is 0. */
+    printf(ECALL_FORMAT);
 }
 
 /* Print: given an instruction, return its name in name. (zhangchb may do this) */
