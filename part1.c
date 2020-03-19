@@ -365,7 +365,7 @@ void write_jalr(Instruction inst UNUSED)
 {
     unsigned int rd, rs1;
     rd = (inst.opcode.opcode >> 7) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
+    rs1 = (inst.opcode.opcode >> 12) % 32;
 
     printf(ITYPE_FORMAT, "jalr", rd, rs1);
 }
@@ -376,59 +376,43 @@ void write_ecall(Instruction inst UNUSED)
     printf(ECALL_FORMAT);
 }
 
-/* Print: given an instruction and its name, print it. */
+/* Print: given an instruction, return its name in name. (zhangchb may do this) */
 void print_rtype(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rd, rs1, rs2;
-    rd = (inst.opcode.opcode >> 7) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
-    rs2 = (inst.opcode.opcode >> 20) % 32;
+    /* YOUR CODE HERE */
 
     printf(RTYPE_FORMAT, name, rd, rs1, rs2);
 }
 
 void print_itype_except_load(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rd, rs1;
-    rd = (inst.opcode.opcode >> 7) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
-
-    printf(ITYPE_FORMAT, name, rd, rs1, get_imm_operand(inst));
+    /* YOUR CODE HERE */
 
 }
 
 void print_load(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rd, rs1;
-    rd = (inst.opcode.opcode >> 7) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
+    /* YOUR CODE HERE */
 
     printf(MEM_FORMAT, name, rd, get_store_offset(inst), rs1);
 }
 
 void print_store(char *name UNUSED, Instruction instruction UNUSED) 
 {
-    unsigned int rs1, rs2;
-    rs2 = (instruction.opcode.opcode >> 20) % 32;
-    rs1 = (instruction.opcode.opcode >> 15) % 32;
-
-    printf(MEM_FORMAT, name, rs2, get_store_offset(instruction), rs1);
+    /* YOUR CODE HERE */
 
 }
 
 void print_branch(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rs1, rs2;
-    rs2 = (inst.opcode.opcode >> 20) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
+    /* YOUR CODE HERE */
 
     printf(BRANCH_FORMAT, name, rs1, rs2, get_branch_offset);
 }
 
 void print_utype(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rd;
-    rd = (inst.opcode.opcode >> 15) % 32;
+    /* YOUR CODE HERE */
 
     printf(UTYPE_FORMAT, name, rd, get_uoffset(inst));
 }
