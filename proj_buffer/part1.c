@@ -72,14 +72,10 @@ void decode_instruction(Instruction inst)
 
 void write_rtype(Instruction inst) 
 {
-    unsigned int func3, func7;
-    func3 = (inst.opcode.opcode >> 12) % 8;
-    func7 = (inst.opcode.opcode >> 25) % 128;
-    
-    switch(func3) 
+    switch(inst.rtype.funct3) 
     {
         case 0:     /* func3 = 0x0 is add, mul or sub. */
-            switch (func7)
+            switch (inst.rtype.funct7)
             {
             case 0: /* func7 = 0x0 is add. */
                 print_rtype("add", inst);
@@ -99,7 +95,7 @@ void write_rtype(Instruction inst)
             }
 
         case 1:
-            switch (func7)
+            switch (inst.rtype.funct7)
             {
             case 0: /* func7 = 0x0 is sll. */
                 print_rtype("sll", inst);
@@ -123,7 +119,7 @@ void write_rtype(Instruction inst)
             break;
 
         case 4:     
-            switch (func7)
+            switch (inst.rtype.funct7)
             {
             case 0: /* func7 = 0x0 is xor. */
                 print_rtype("xor", inst);
@@ -140,7 +136,7 @@ void write_rtype(Instruction inst)
             }
 
         case 5:
-            switch (func7)
+            switch (inst.rtype.funct7)
             {
             case 0: /* func7 = 0x0 is srl. */
                 print_rtype("srl", inst);
@@ -156,7 +152,7 @@ void write_rtype(Instruction inst)
             }
 
         case 6:
-            switch (func7)
+            switch (inst.rtype.funct7)
             {
             case 0: /* func7 = 0x0 is or. */
                 print_rtype("or", inst);
@@ -181,12 +177,9 @@ void write_rtype(Instruction inst)
 void write_itype_except(Instruction inst) 
 {
     int shiftOp;
-    unsigned int func3, func7;
-    func3 = (inst.opcode.opcode >> 12) % 8;
-    func7 = (inst.opcode.opcode >> 25) % 128;
     shiftOp = -1;
 
-    switch(func3) 
+    switch(inst.itype.funct3) 
     { 
     case 0:     /* func3 = 0x0 is addi */
         print_itype_except_load("addi", inst);
@@ -209,7 +202,7 @@ void write_itype_except(Instruction inst)
         break;
     
     case 5:     
-        switch (func7)
+        switch (inst.rtype.funct7)
         {
         case 0: /* ... is srli. */
             print_itype_except_load("srli", inst);
@@ -240,9 +233,7 @@ void write_itype_except(Instruction inst)
 
 void write_load(Instruction inst) 
 {
-    unsigned int func3;
-    func3 = (inst.opcode.opcode >> 12) % 8;
-    switch(func3) 
+    switch(inst.itype.funct3) 
     { 
         case 0:     /* .. is lb. */
             print_load("lb", inst);
@@ -272,9 +263,7 @@ void write_load(Instruction inst)
 
 void write_store(Instruction inst) 
 {
-    unsigned int func3;
-    func3 = (inst.opcode.opcode >> 12) % 8;
-    switch(func3) 
+    switch(inst.stype.funct3) 
     { 
         case 0:     /* .. is sb. */
             print_store("sb", inst);
@@ -296,9 +285,7 @@ void write_store(Instruction inst)
 
 void write_branch(Instruction inst) 
 {
-    unsigned int func3;
-    func3 = (inst.opcode.opcode >> 12) % 8;
-    switch(func3) 
+    switch(inst.sbtype.funct3) 
     {
         case 0:     /* .. is beq. */
             print_branch("beq", inst);
@@ -334,9 +321,7 @@ void write_branch(Instruction inst)
 
 void write_utype(Instruction inst) 
 {
-    unsigned int opcode;
-    opcode = inst.opcode.opcode % 128;
-    switch(opcode) 
+    switch(inst.utype.opcode) 
     { 
         case 23:    /* .. is auipc. */
             print_utype("auipc", inst);
@@ -355,19 +340,12 @@ void write_utype(Instruction inst)
 
 void write_jal(Instruction inst UNUSED) 
 {
-    unsigned int rd;
-    rd = (inst.opcode.opcode >> 7) % 32;
-
-    printf(JAL_FORMAT, rd, get_jump_offset(inst));
+    printf(JAL_FORMAT, inst.ujtype.rd, get_jump_offset(inst));
 }
 
 void write_jalr(Instruction inst UNUSED) 
 {
-    unsigned int rd, rs1;
-    rd = (inst.opcode.opcode >> 7) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
-
-    printf(ITYPE_FORMAT, "jalr", rd, rs1);
+    printf(ITYPE_FORMAT, "jalr", inst.itype.rd, inst.itype.rs1);
 }
 
 void write_ecall(Instruction inst UNUSED) 
@@ -379,56 +357,30 @@ void write_ecall(Instruction inst UNUSED)
 /* Print: given an instruction and its name, print it. */
 void print_rtype(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rd, rs1, rs2;
-    rd = (inst.opcode.opcode >> 7) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
-    rs2 = (inst.opcode.opcode >> 20) % 32;
-
-    printf(RTYPE_FORMAT, name, rd, rs1, rs2);
+    printf(RTYPE_FORMAT, name, inst.rtype.rd, inst.rtype.rs1, inst.rtype.rs2);
 }
 
 void print_itype_except_load(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rd, rs1;
-    rd = (inst.opcode.opcode >> 7) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
-
-    printf(ITYPE_FORMAT, name, rd, rs1, get_imm_operand(inst));
-
+    printf(ITYPE_FORMAT, name, inst.itype.rd, inst.itype.rs1, get_imm_operand(inst));
 }
 
 void print_load(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rd, rs1;
-    rd = (inst.opcode.opcode >> 7) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
-
-    printf(MEM_FORMAT, name, rd, get_store_offset(inst), rs1);
+    printf(MEM_FORMAT, name, inst.itype.rd, get_load_offset(inst), inst.itype.rs1);
 }
 
 void print_store(char *name UNUSED, Instruction instruction UNUSED) 
 {
-    unsigned int rs1, rs2;
-    rs2 = (instruction.opcode.opcode >> 20) % 32;
-    rs1 = (instruction.opcode.opcode >> 15) % 32;
-
-    printf(MEM_FORMAT, name, rs2, get_store_offset(instruction), rs1);
-
+    printf(MEM_FORMAT, name, instruction.stype.rs2, get_store_offset(instruction), instruction.stype.rs1);
 }
 
 void print_branch(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rs1, rs2;
-    rs2 = (inst.opcode.opcode >> 20) % 32;
-    rs1 = (inst.opcode.opcode >> 15) % 32;
-
-    printf(BRANCH_FORMAT, name, rs1, rs2, get_branch_offset);
+    printf(BRANCH_FORMAT, name, inst.sbtype.rs1, inst.sbtype.rs2, get_branch_offset(inst));
 }
 
 void print_utype(char *name UNUSED, Instruction inst UNUSED) 
 {
-    unsigned int rd;
-    rd = (inst.opcode.opcode >> 15) % 32;
-
-    printf(UTYPE_FORMAT, name, rd, get_uoffset(inst));
+    printf(UTYPE_FORMAT, name, inst.utype.rd, get_u_offset(inst));
 }
