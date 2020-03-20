@@ -7,17 +7,20 @@ int bitSigner(unsigned int field UNUSED, unsigned int size UNUSED)
 {
     int tmp;
     tmp = field >> (size-1);    /* Get the most significant bit */
-    if(tmp = 1)       /* If it is 1, it is negative. */
-        return tmp - (2 >> size);   /* 2^size - tmp makes it be the corresponding negative number. */
+    if(tmp == 1)       /* If it is 1, it is negative. */
+        return field - (1 << size);   /* 2^size - tmp makes it be the corresponding negative number. */
     else{
-        return tmp;
+        return field;
     }
 }
 
 /* Get the immediate of the typical I-TYPE instruction. */
 int get_imm_operand(Instruction inst UNUSED)
 {
-    return bitSigner(inst.itype.imm, 12);
+    if(inst.opcode.opcode == 19 && inst.itype.funct3 == 5 && inst.itype.imm >> 5 == 32) /* This is srai. */
+        return inst.itype.imm % 32;
+    else
+        return bitSigner(inst.itype.imm, 12);
 }
 
 /* Remember that the offsets should return the offset in BYTES */
@@ -29,7 +32,7 @@ int get_branch_offset(Instruction inst UNUSED)  /* Needs to check how the sign f
     tmp += (inst.sbtype.imm5 / 2) << 1;     /* Add 2^1 * imm[4:1] */
     tmp += (inst.sbtype.imm7 % 64) << 5;    /* Add 2^5 * imm[10:5] */
     tmp += (inst.sbtype.imm7 / 64) << 12;   /* Add 2^12 * imm[12] */
-    return bitSigner(tmp, 13) / 4 ;         /* SB has length 13. */
+    return bitSigner(tmp, 13) ;         /* SB has length 13. */
 }
 
 int get_jump_offset(Instruction inst UNUSED)
@@ -43,12 +46,12 @@ int get_jump_offset(Instruction inst UNUSED)
     tmp += (tmp2 % 1024) << 1; /* Add 2^1 * imm[10:1] */
     tmp2 = tmp2 / 1024;
     tmp += (tmp2 % 2) << 20;    /* Add 2^20 * imm[20] */
-    return bitSigner(tmp, 21) / 4;
+    return bitSigner(tmp, 21);
 }
 
 int get_store_offset(Instruction inst UNUSED)
 {
-    return bitSigner(inst.stype.imm5 + inst.stype.imm7 << 5, 12);
+    return bitSigner(inst.stype.imm5 + (inst.stype.imm7 << 5), 12);
 }
 
 int get_u_offset(Instruction inst)  /* Need to check */
