@@ -93,6 +93,7 @@ void write_rtype(Instruction inst)
                 handle_invalid_instruction(inst);
                 break;
             }
+            break;
 
         case 1:
             switch (inst.rtype.funct7)
@@ -109,6 +110,7 @@ void write_rtype(Instruction inst)
                 handle_invalid_instruction(inst);
                 break;
             }
+            break;
 
         case 2:     /* func3 = 0x2 is slt. */
             print_rtype("slt", inst);
@@ -134,6 +136,7 @@ void write_rtype(Instruction inst)
                 handle_invalid_instruction(inst);
                 break;
             }
+            break;
 
         case 5:
             switch (inst.rtype.funct7)
@@ -150,23 +153,28 @@ void write_rtype(Instruction inst)
                 handle_invalid_instruction(inst);
                 break;
             }
+            break;
 
         case 6:
             switch (inst.rtype.funct7)
             {
             case 0: /* func7 = 0x0 is or. */
                 print_rtype("or", inst);
+                break;
             
             case 1: /* func7 = 0x1 is rem. */
                 print_rtype("rem", inst);
+                break;
 
             default:
                 handle_invalid_instruction(inst);
                 break;
             }
+            break;
 
         case 7: /* func3 = 0x7 is and. */
             print_rtype("and", inst);
+            break;
 
         default:
             handle_invalid_instruction(inst);
@@ -216,6 +224,7 @@ void write_itype_except(Instruction inst)
             handle_invalid_instruction(inst);
             break;
         }
+        break;
     
     case 6:     /* .. is ori. */
         print_itype_except_load("ori", inst);
@@ -345,7 +354,7 @@ void write_jal(Instruction inst UNUSED)
 
 void write_jalr(Instruction inst UNUSED) 
 {
-    printf(ITYPE_FORMAT, "jalr", inst.itype.rd, inst.itype.rs1);
+    printf(ITYPE_FORMAT, "jalr", inst.itype.rd, inst.itype.rs1, get_imm_operand(inst));
 }
 
 void write_ecall(Instruction inst UNUSED) 
@@ -367,7 +376,7 @@ void print_itype_except_load(char *name UNUSED, Instruction inst UNUSED)
 
 void print_load(char *name UNUSED, Instruction inst UNUSED) 
 {
-    printf(MEM_FORMAT, name, inst.itype.rd, get_load_offset(inst), inst.itype.rs1);
+    printf(MEM_FORMAT, name, inst.itype.rd, get_imm_operand(inst), inst.itype.rs1);
 }
 
 void print_store(char *name UNUSED, Instruction instruction UNUSED) 
@@ -382,5 +391,5 @@ void print_branch(char *name UNUSED, Instruction inst UNUSED)
 
 void print_utype(char *name UNUSED, Instruction inst UNUSED) 
 {
-    printf(UTYPE_FORMAT, name, inst.utype.rd, get_u_offset(inst));
+    printf(UTYPE_FORMAT, name, inst.utype.rd, inst.utype.imm);
 }
