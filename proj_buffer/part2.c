@@ -63,6 +63,8 @@ void execute_instruction(Instruction inst, Processor *p UNUSED, Byte *memory UNU
             exit(-1);
             break;
     }
+
+    p->R[0] = 0;    /* set x0 to 0 */
 }
 
 void execute_rtype(Instruction inst, Processor *p UNUSED)
@@ -190,6 +192,8 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
         exit(-1);
         break;
     }
+
+    p->PC += 4; /* go to the next instruction. */
 }
 
 void execute_itype_except_load(Instruction inst, Processor *p UNUSED)
@@ -257,6 +261,8 @@ void execute_itype_except_load(Instruction inst, Processor *p UNUSED)
         exit(-1);
         break;
     }
+    
+    p->PC += 4; /* go to the next instruction. */
 }
 
 void execute_ecall(Processor *p UNUSED, Byte *memory UNUSED)
@@ -284,24 +290,50 @@ void execute_ecall(Processor *p UNUSED, Byte *memory UNUSED)
         exit(-1);
         break;
     }
+    
+    p->PC += 4; /* go to the next instruction. */
 }
 
 /* Need to be impelmented by Zhangchb. */
 void execute_branch(Instruction inst, Processor *p UNUSED)
 {
-    int branchaddr; /* branch address. */
-    branchaddr = 0;
+    int offset; /* branch address. */
+    offset = 0;
     /* Remember that the immediate portion of branches
-       is counting half-words, so make sure to account for that. */
-    switch (0)
-    { /* What do we switch on? */
-        /* YOUR CODE HERE */
+        is counting half-words, so make sure to account for that. */
+    switch (inst.sbtype.funct3)
+    { 
+        case 0: /* beq */
+            offset = (p->R[inst.sbtype.rs1] == p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4; 
+            break;
+            
+        case 1: /* bne */
+            offset = (p->R[inst.sbtype.rs1] != p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4; 
+            break;
+            
+        case 4: /* blt */
+            offset = (p->R[inst.sbtype.rs1] < p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4; 
+            break;
+            
+        case 5: /* bge */
+            offset = (p->R[inst.sbtype.rs1] >= p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4; 
+            break;
+            
+        case 6: /* bltu */
+            offset = ()((unsigned int)p->R[inst.sbtype.rs1] < (unsigned int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4; 
+            break;
 
+        case 7: /* bgeu */
+            offset = ((unsigned int)p->R[inst.sbtype.rs1] == (unsigned int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4; 
+            break;
+                        
     default:
         handle_invalid_instruction(inst);
         exit(-1);
         break;
     }
+
+    p->PC += offset; /* point to the next instruct or jump to the address. */
 }
 
 void execute_load(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
@@ -309,23 +341,23 @@ void execute_load(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
     switch (inst.itype.funct3)
     { 
         case 0: /* lb */ /* Check what is check_align later. */
-            p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1], LENGTH_BYTE, check_align()); 
+            p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_BYTE, 0); 
             break;
 
         case 1: /* lh */
-            p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1], LENGTH_HALF_WORD, check_align());
+            p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_HALF_WORD, 0);
             break;
 
         case 2: /* lw */
-            p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1], LENGTH_WORD, check_align());
+            p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_WORD, 0);
             break;
         
         case 4: /* lbu */   /* check unsigned later. */
-            p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1], LENGTH_BYTE, check_align()); 
+            p->R[inst.itype.rd] = (Byte) load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_BYTE, 0); 
             break;
 
         case 5: /* lhu */
-            p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1], LENGTH_HALF_WORD, check_align()); 
+            p->R[inst.itype.rd] = (Half) load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_HALF_WORD, 0); 
             break;
 
     default:
@@ -333,6 +365,8 @@ void execute_load(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
         exit(-1);
         break;
     }
+    
+    p->PC += 4; /* go to the next instruction. */
 }
 
 void execute_store(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
@@ -340,15 +374,15 @@ void execute_store(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
     switch (inst.stype.funct3)
     { 
         case 0: /* sb */
-            store(memory, p->R[inst.stype.rs2], LENGTH_BYTE, p->R[inst.stype.rs1], check_align());
+            store(memory, p->R[inst.stype.rs2], LENGTH_BYTE, p->R[inst.stype.rs1], 0);
             break;
 
         case 1: /* sh */
-            store(memory, p->R[inst.stype.rs2], LENGTH_HALF_WORD, p->R[inst.stype.rs1], check_align());
+            store(memory, p->R[inst.stype.rs2], LENGTH_HALF_WORD, p->R[inst.stype.rs1], 0);
             break;
 
         case 2: /* sw */
-            store(memory, p->R[inst.stype.rs2], LENGTH_WORD, p->R[inst.stype.rs1], check_align());
+            store(memory, p->R[inst.stype.rs2], LENGTH_WORD, p->R[inst.stype.rs1], 0);
             break;
 
     default:
@@ -356,6 +390,8 @@ void execute_store(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
         exit(-1);
         break;
     }
+    
+    p->PC += 4; /* go to the next instruction. */
 }
 
 void execute_jal(Instruction inst UNUSED, Processor *p UNUSED)
@@ -395,6 +431,8 @@ void execute_utype(Instruction inst, Processor *p UNUSED)
         exit(-1);
         break;
     }
+    
+    p->PC += 4; /* go to the next instruction. */
 }
 
 /* Checks that the address is aligned correctly */
@@ -426,6 +464,23 @@ void store(Byte *memory UNUSED, Address address, Alignment alignment, Word value
         handle_invalid_write(address);
     }
     /* YOUR CODE HERE */
+    switch (alignment)
+    {
+    case LENGTH_BYTE:
+        memory[address] = value % 16;
+        break;
+
+    case LENGTH_HALF_WORD:
+        ((Half *)memory)[address] = value;
+        break;
+
+    case LENGTH_WORD:
+        ((Word *)memory)[address] = value;
+        break;
+
+    default:
+        break;
+    }
 }
 
 Word load(Byte *memory UNUSED, Address address, Alignment alignment, int check_align)
@@ -438,6 +493,23 @@ Word load(Byte *memory UNUSED, Address address, Alignment alignment, int check_a
     }
 
     /* YOUR CODE HERE */
+    switch (alignment)
+    {
+    case LENGTH_BYTE:
+        data = ((sByte *)memory)[address];
+        break;
+
+    case LENGTH_HALF_WORD:
+        data = ((sHalf *)memory)[address];
+        break;
+
+    case LENGTH_WORD:
+        data = ((sWord *)memory)[address];
+        break;
+
+    default:
+        break;
+    }
 
     return data;
 }
