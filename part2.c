@@ -114,7 +114,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
         break;
 
     case 2: /* func3 = 0x2 is slt. */
-        p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] < p->R[inst.rtype.rs2]) ? 1 : 0;
+        p->R[inst.rtype.rd] = ((int)p->R[inst.rtype.rs1] < (int)p->R[inst.rtype.rs2]) ? 1 : 0;
         break;
 
     case 3: /* func3 = 0x3 is slut. */
@@ -230,7 +230,7 @@ void execute_itype_except_load(Instruction inst, Processor *p UNUSED)
             break;
 
         case 32: /* ... is srai. */
-            if (inst.rtype.rs1 < 0)
+            if (p->R[inst.rtype.rs1] >= 2147483648)
             {
                 p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] >> get_imm_operand(inst)) /*+ 1*/;
                 p->R[inst.rtype.rd] += shiftOp << (32 - get_imm_operand(inst)); /* pad the front part by 1. */
@@ -339,19 +339,24 @@ void execute_branch(Instruction inst, Processor *p UNUSED)
 }
 
 void execute_load(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
-{
+{  
+    int tmp = 0;
     switch (inst.itype.funct3)
     {
     case 0: /* lb */ /* Check what is check_align later. */
-        p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_BYTE, 0);
+        tmp = (int)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_BYTE, 0);
+        if(tmp >= 8) tmp += 4294967280; /* FFFF FFF0 */
+        p->R[inst.itype.rd] = tmp;
         break;
 
     case 1: /* lh */
-        p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_HALF_WORD, 0);
+        tmp = (int)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_HALF_WORD, 0);
+        if(tmp > 32768) tmp += 4294901760; /* FFFF 0000 */
+        p->R[inst.itype.rd] = tmp;
         break;
 
     case 2: /* lw */
-        p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_WORD, 0);
+        p->R[inst.itype.rd] = (int)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_WORD, 0);
         break;
 
     case 4: /* lbu */ /* check unsigned later. */
@@ -367,7 +372,6 @@ void execute_load(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
         exit(-1);
         break;
     }
-
     p->PC += 4; /* go to the next instruction. */
 }
 
@@ -376,15 +380,15 @@ void execute_store(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
     switch (inst.stype.funct3)
     {
     case 0: /* sb */
-        store(memory, p->R[inst.stype.rs2], LENGTH_BYTE, p->R[inst.stype.rs1], 0);
+        store(memory, p->R[inst.stype.rs1] + get_store_offset(inst), LENGTH_BYTE, p->R[inst.stype.rs2], 0);
         break;
 
     case 1: /* sh */
-        store(memory, p->R[inst.stype.rs2], LENGTH_HALF_WORD, p->R[inst.stype.rs1], 0);
+        store(memory, p->R[inst.stype.rs1] + get_store_offset(inst), LENGTH_HALF_WORD, p->R[inst.stype.rs2], 0);
         break;
 
     case 2: /* sw */
-        store(memory, p->R[inst.stype.rs2], LENGTH_WORD, p->R[inst.stype.rs1], 0);
+        store(memory, p->R[inst.stype.rs1] + get_store_offset(inst), LENGTH_WORD, p->R[inst.stype.rs2], 0);
         break;
 
     default:
@@ -392,17 +396,16 @@ void execute_store(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
         exit(-1);
         break;
     }
-
     p->PC += 4; /* go to the next instruction. */
 }
 
 void execute_jal(Instruction inst UNUSED, Processor *p UNUSED)
 {
-    Address nextPC;
+    int nextPC;
     nextPC = 0;
     /* Check here later. */
-    nextPC = inst.ujtype.imm / 4;
-    p->PC = nextPC;
+    nextPC = get_jump_offset(inst);
+    p->PC += nextPC;
 }
 
 void execute_jalr(Instruction inst UNUSED, Processor *p UNUSED)
@@ -465,15 +468,15 @@ void store(Byte *memory UNUSED, Address address, Alignment alignment, Word value
     switch (alignment)
     {
     case LENGTH_BYTE:
-        memory[address] = value % 16;
+        *(memory + address) = value % 16;
         break;
 
     case LENGTH_HALF_WORD:
-        ((Half *)memory)[address] = value;
+        *((Half *)(memory + address)) = value;
         break;
 
     case LENGTH_WORD:
-        ((Word *)memory)[address] = value;
+        *((Word *)(memory + address)) = value;
         break;
 
     default:
@@ -511,3 +514,5 @@ Word load(Byte *memory UNUSED, Address address, Alignment alignment, int check_a
 
     return data;
 }
+
+
