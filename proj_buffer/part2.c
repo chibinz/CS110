@@ -81,7 +81,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
                 break;
 
             case 1: /* func7 = 0x1 is mul.(low) */
-                p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] * p->R[inst.rtype.rs2]) % (1>>32);
+                p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] * p->R[inst.rtype.rs2]) % (1 << 31);
                 break;
             
             case 32:/* func7 = 0x20 is sub. */
@@ -103,7 +103,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
                 break;
             
             case 1: /* func7 = 1 is mulh.(high) */
-                p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] * p->R[inst.rtype.rs2]) / (1 >> 32);
+                p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] * p->R[inst.rtype.rs2]) / (1 << 31);
                 break;
 
             default:
@@ -211,7 +211,7 @@ void execute_itype_except_load(Instruction inst, Processor *p UNUSED)
         break;
 
     case 2:     /* func3 = 0x2 is slti. */
-        p->R[inst.itype.rd] = (p->R[inst.itype.rs1] < get_imm_operand(inst)) ? 1 : 0;
+        p->R[inst.itype.rd] = ((int) p->R[inst.itype.rs1] < get_imm_operand(inst)) ? 1 : 0;
         break;
 
     case 3:     /* ........... is sltiu. */
@@ -274,7 +274,7 @@ void execute_ecall(Processor *p UNUSED, Byte *memory UNUSED)
             break;
         
         case 4:
-            printf("%s", memory[p->R[11]]);  /* Print the string store at address in a11. */ /* may have bugs. */
+            printf("%s", (char *)&(memory[p->R[11]]));  /* Print the string store at address in a11. */ /* may have bugs. */
             break;
 
         case 10:
@@ -320,7 +320,7 @@ void execute_branch(Instruction inst, Processor *p UNUSED)
             break;
             
         case 6: /* bltu */
-            offset = ()((unsigned int)p->R[inst.sbtype.rs1] < (unsigned int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4; 
+            offset = ((unsigned int)p->R[inst.sbtype.rs1] < (unsigned int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4; 
             break;
 
         case 7: /* bgeu */
@@ -405,8 +405,6 @@ void execute_jal(Instruction inst UNUSED, Processor *p UNUSED)
 
 void execute_jalr(Instruction inst UNUSED, Processor *p UNUSED)
 {
-    Address nextPC;
-    nextPC = 0;
     /* . */
     p->R[inst.itype.rd] = p->PC+4;
     p->PC = p->R[inst.itype.rs1] + get_imm_operand(inst);
@@ -414,12 +412,10 @@ void execute_jalr(Instruction inst UNUSED, Processor *p UNUSED)
 
 void execute_utype(Instruction inst, Processor *p UNUSED)
 {
-    int imm;
-    imm = 0;
     switch (inst.utype.opcode)
     { 
         case 23:    /* auipc */ /* Also check PC. */
-            p->R[inst.utype.rd] = p->PC + inst.utype.imm << 12;
+            p->R[inst.utype.rd] = (p->PC + inst.utype.imm) << 12;
             break;
 
         case 55:    /* lui */
