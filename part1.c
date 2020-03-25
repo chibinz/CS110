@@ -35,7 +35,7 @@ void decode_instruction(Instruction inst)
         write_itype_except(inst);
         break;
 
-    case 107: /* 107 = 0x67 Then it is a jalr. */
+    case 103: /* 107 = 0x67 Then it is a jalr. */
         write_jalr(inst);
         break;
 
