@@ -115,8 +115,8 @@ void write_rtype(Instruction inst)
         print_rtype("slt", inst);
         break;
 
-    case 3: /* func3 = 0x3 is slut. */
-        print_rtype("slut", inst);
+    case 3: /* func3 = 0x3 is sltu. */
+        print_rtype("sltu", inst);
         break;
 
     case 4:
