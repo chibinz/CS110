@@ -133,8 +133,7 @@ void vector_set(vector_t *v, size_t loc, int value) {
     }
 
     if (loc >= v->size) {
-        v->size = loc + 1;
-        int *new_data = calloc(v->size, sizeof(int));
+        int *new_data = calloc(loc + 1, sizeof(int));
         
         if (new_data == NULL) {
             vector_delete(v);
@@ -143,6 +142,7 @@ void vector_set(vector_t *v, size_t loc, int value) {
 
         memcpy(new_data, v->data, sizeof(int) * v->size);
         free(v->data);
+        v->size = loc + 1;
         v->data = new_data;
     }
 

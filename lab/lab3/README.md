@@ -14,11 +14,12 @@ step/next
 ### Action item 2:
 ```
 run <arguments>
-break if <expr>
+break <line no.> if <expr>
 next
 step
 continue
 print 1+2
+display <variable>
 frame
 quit
 ```
