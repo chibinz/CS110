@@ -30,7 +30,7 @@ void execute_instruction(Instruction inst, Processor *p UNUSED, Byte *memory UNU
         execute_itype_except_load(inst, p);
         break;
 
-    case 107: /* 107 = 0x67 Then it is a jalr. */
+    case 103: /* 107 = 0x67 Then it is a jalr. */
         execute_jalr(inst, p);
         break;
 
@@ -103,7 +103,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
             break;
 
         case 1: /* func7 = 1 is mulh.(high) */
-            p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] * p->R[inst.rtype.rs2]) / (1 << 31);
+            p->R[inst.rtype.rd] = ((sDouble)(sWord)p->R[inst.rtype.rs1] * (sDouble)(sWord)p->R[inst.rtype.rs2]) / 4294967296;
             break;
 
         default:
@@ -278,6 +278,7 @@ void execute_ecall(Processor *p UNUSED, Byte *memory UNUSED)
         break;
 
     case 10:
+        printf("exiting the simulator\n");
         exit(0);
         break;
 
@@ -312,7 +313,7 @@ void execute_branch(Instruction inst, Processor *p UNUSED)
         break;
 
     case 4: /* blt */
-        offset = (p->R[inst.sbtype.rs1] < p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
+        offset = ((int)p->R[inst.sbtype.rs1] < (int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
         break;
 
     case 5: /* bge */
