@@ -1,3 +1,6 @@
 [submodule "project/project1_emulator"]
 	path = project/project1_emulator
 	url = http://autolab.sist.shanghaitech.edu.cn/gitlab/cs110_projects/p1_huiwy_zhangchb1.git
+[submodule "homework/hw5_parallel_sssp"]
+	path = homework/hw5_parallel_sssp
+	url = https://autolab.sist.shanghaitech.edu.cn/gitlab/zhangchb1/hw-5-framework.git
