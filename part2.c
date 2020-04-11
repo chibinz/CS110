@@ -81,7 +81,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
             break;
 
         case 1: /* func7 = 0x1 is mul.(low) */
-            p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] * p->R[inst.rtype.rs2]) % (1 << 31);
+            p->R[inst.rtype.rd] = ((sWord)(p->R[inst.rtype.rs1]) * (sWord)(p->R[inst.rtype.rs2]));
             break;
 
         case 32: /* func7 = 0x20 is sub. */
@@ -103,7 +103,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
             break;
 
         case 1: /* func7 = 1 is mulh.(high) */
-            p->R[inst.rtype.rd] = ((sDouble)(sWord)p->R[inst.rtype.rs1] * (sDouble)(sWord)p->R[inst.rtype.rs2]) / 4294967296;
+            p->R[inst.rtype.rd] = ((Double)((sDouble)(sWord)(p->R[inst.rtype.rs2])*(sDouble)(sWord)(p->R[inst.rtype.rs1]))) / 4294967296;
             break;
 
         default:
