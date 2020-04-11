@@ -129,7 +129,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
             break;
 
         case 1: /* func7 = 0x1 is div. */
-            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] / p->R[inst.rtype.rs2];
+            p->R[inst.rtype.rd] = (sWord)p->R[inst.rtype.rs1] / (sWord)p->R[inst.rtype.rs2];
             break;
 
         default:
@@ -147,7 +147,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
             break;
 
         case 32: /* func7 = 0x20 is sra. */
-            if (inst.rtype.rs1 < 0)
+            if ((sWord)inst.rtype.rs1 < 0)
             {
                 p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] >> p->R[inst.rtype.rs2]) /*+ 1*/;
                 p->R[inst.rtype.rd] += tmp << (32 - p->R[inst.rtype.rs2]); /* pad the front part by 1. */
@@ -295,7 +295,6 @@ void execute_ecall(Processor *p UNUSED, Byte *memory UNUSED)
     p->PC += 4; /* go to the next instruction. */
 }
 
-/* Need to be impelmented by Zhangchb. */
 void execute_branch(Instruction inst, Processor *p UNUSED)
 {
     int offset; /* branch address. */
@@ -327,7 +326,7 @@ void execute_branch(Instruction inst, Processor *p UNUSED)
 
     case 7: /* bgeu */
         offset =
-            ((unsigned int)p->R[inst.sbtype.rs1] == (unsigned int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
+            ((unsigned int)p->R[inst.sbtype.rs1] >= (unsigned int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
         break;
 
     default:
@@ -405,6 +404,7 @@ void execute_jal(Instruction inst UNUSED, Processor *p UNUSED)
     int nextPC;
     nextPC = 0;
     /* Check here later. */
+    p->R[inst.ujtype.rd] = p->PC + 4;
     nextPC = get_jump_offset(inst);
     p->PC += nextPC;
 }
@@ -421,7 +421,7 @@ void execute_utype(Instruction inst, Processor *p UNUSED)
     switch (inst.utype.opcode)
     {
     case 23: /* auipc */ /* Also check PC. */
-        p->R[inst.utype.rd] = (p->PC + inst.utype.imm) << 12;
+        p->R[inst.utype.rd] = p->PC + (inst.utype.imm) << 12;
         break;
 
     case 55: /* lui */
