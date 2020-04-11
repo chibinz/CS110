@@ -16,7 +16,7 @@ void execute_utype(Instruction, Processor *);
 
 void execute_instruction(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
 {
-    switch (inst.opcode.opcode % 128) /* Find the type of the instructions according to its opcode. */
+    switch (inst.opcode.opcode) /* Find the type of the instructions according to its opcode. */
     {
     case 51: /* 51 = 0x33 Then it is a Rtype. */
         execute_rtype(inst, p);
@@ -69,8 +69,6 @@ void execute_instruction(Instruction inst, Processor *p UNUSED, Byte *memory UNU
 
 void execute_rtype(Instruction inst, Processor *p UNUSED)
 {
-    int tmp;
-    tmp = -1; /* tmp = FFFF FFFF */
     switch (inst.rtype.funct3)
     {
     case 0: /* func3 = 0x0 is add, mul or sub. */
@@ -99,7 +97,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
         switch (inst.rtype.funct7)
         {
         case 0: /* func7 = 0x0 is sll. */
-            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] << p->R[inst.rtype.rs2];
+            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] << (sWord)(p->R[inst.rtype.rs2]);
             break;
 
         case 1: /* func7 = 1 is mulh.(high) */
@@ -114,11 +112,11 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
         break;
 
     case 2: /* func3 = 0x2 is slt. */
-        p->R[inst.rtype.rd] = ((int)p->R[inst.rtype.rs1] < (int)p->R[inst.rtype.rs2]) ? 1 : 0;
+        p->R[inst.rtype.rd] = ((sWord)(p->R[inst.rtype.rs1]) < (sWord)(p->R[inst.rtype.rs2])) ? 1 : 0;
         break;
 
     case 3: /* func3 = 0x3 is slut. */
-        p->R[inst.rtype.rd] = ((unsigned int)p->R[inst.rtype.rs1] < (unsigned int)p->R[inst.rtype.rs2]) ? 1 : 0;
+        p->R[inst.rtype.rd] = ((Word)(p->R[inst.rtype.rs1]) < (Word)(p->R[inst.rtype.rs2])) ? 1 : 0;
         break;
 
     case 4:
@@ -129,7 +127,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
             break;
 
         case 1: /* func7 = 0x1 is div. */
-            p->R[inst.rtype.rd] = (sWord)p->R[inst.rtype.rs1] / (sWord)p->R[inst.rtype.rs2];
+            p->R[inst.rtype.rd] = (sWord)(p->R[inst.rtype.rs1]) / (sWord)(p->R[inst.rtype.rs2]);
             break;
 
         default:
@@ -143,19 +141,11 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
         switch (inst.rtype.funct7)
         {
         case 0: /* func7 = 0x0 is srl. */
-            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] >> p->R[inst.rtype.rs2];
+            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] >> (sWord)(p->R[inst.rtype.rs2]);
             break;
 
         case 32: /* func7 = 0x20 is sra. */
-            if ((sWord)inst.rtype.rs1 < 0)
-            {
-                p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] >> p->R[inst.rtype.rs2]) /*+ 1*/;
-                p->R[inst.rtype.rd] += tmp << (32 - p->R[inst.rtype.rs2]); /* pad the front part by 1. */
-            }
-            else
-            {
-                p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] >> p->R[inst.rtype.rs2];
-            }
+            p->R[inst.rtype.rd] = (sWord)(p->R[inst.rtype.rs1]) >> (sWord)(p->R[inst.rtype.rs2]);
             break;
 
         default:
@@ -173,7 +163,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
             break;
 
         case 1: /* func7 = 0x1 is rem. */
-            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] % p->R[inst.rtype.rs2];
+            p->R[inst.rtype.rd] = (sWord)(p->R[inst.rtype.rs1]) % (sWord)(p->R[inst.rtype.rs2]);
             break;
 
         default:
@@ -211,18 +201,18 @@ void execute_itype_except_load(Instruction inst, Processor *p UNUSED)
         break;
 
     case 2: /* func3 = 0x2 is slti. */
-        p->R[inst.itype.rd] = ((int)p->R[inst.itype.rs1] < get_imm_operand(inst)) ? 1 : 0;
+        p->R[inst.itype.rd] = ((sWord)(p->R[inst.itype.rs1]) < get_imm_operand(inst)) ? 1 : 0;
         break;
 
     case 3: /* ........... is sltiu. */
-        p->R[inst.itype.rd] = ((unsigned int)p->R[inst.itype.rs1] + (unsigned int)get_imm_operand(inst)) ? 1 : 0;
+        p->R[inst.itype.rd] = ((Word)(p->R[inst.itype.rs1]) < (unsigned int)get_imm_operand(inst)) ? 1 : 0;
         break;
 
     case 4: /* ... is xori.*/
         p->R[inst.itype.rd] = p->R[inst.itype.rs1] ^ get_imm_operand(inst);
         break;
 
-    case 5:
+    case 5:/*..............*/
         switch (inst.rtype.funct7)
         {
         case 0: /* ... is srli. */
@@ -287,7 +277,7 @@ void execute_ecall(Processor *p UNUSED, Byte *memory UNUSED)
         break;
 
     default:                                     /* undefined ecall */
-        printf("Illegal ecall number %d\n", -1); /* What stores the ecall arg? */
+        printf("Illegal ecall number %d\n", p->R[10]); /* What stores the ecall arg? */
         exit(-1);
         break;
     }
@@ -312,21 +302,21 @@ void execute_branch(Instruction inst, Processor *p UNUSED)
         break;
 
     case 4: /* blt */
-        offset = ((int)p->R[inst.sbtype.rs1] < (int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
+        offset = ((sWord)(p->R[inst.sbtype.rs1]) < (sWord)(p->R[inst.sbtype.rs2])) ? get_branch_offset(inst) : 4;
         break;
 
     case 5: /* bge */
-        offset = (p->R[inst.sbtype.rs1] >= p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
+        offset = ((sWord)(p->R[inst.sbtype.rs1]) >= (sWord)(p->R[inst.sbtype.rs2])) ? get_branch_offset(inst) : 4;
         break;
 
     case 6: /* bltu */
         offset =
-            ((unsigned int)p->R[inst.sbtype.rs1] < (unsigned int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
+            ((Word)p->R[inst.sbtype.rs1] < (Word)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
         break;
 
     case 7: /* bgeu */
         offset =
-            ((unsigned int)p->R[inst.sbtype.rs1] >= (unsigned int)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
+            ((Word)p->R[inst.sbtype.rs1] >= (Word)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
         break;
 
     default:
@@ -401,12 +391,8 @@ void execute_store(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
 
 void execute_jal(Instruction inst UNUSED, Processor *p UNUSED)
 {
-    int nextPC;
-    nextPC = 0;
-    /* Check here later. */
     p->R[inst.ujtype.rd] = p->PC + 4;
-    nextPC = get_jump_offset(inst);
-    p->PC += nextPC;
+    p->PC += get_jump_offset(inst);
 }
 
 void execute_jalr(Instruction inst UNUSED, Processor *p UNUSED)
@@ -421,7 +407,7 @@ void execute_utype(Instruction inst, Processor *p UNUSED)
     switch (inst.utype.opcode)
     {
     case 23: /* auipc */ /* Also check PC. */
-        p->R[inst.utype.rd] = p->PC + (inst.utype.imm) << 12;
+        p->R[inst.utype.rd] = p->PC + ((inst.utype.imm) << 12);
         break;
 
     case 55: /* lui */
