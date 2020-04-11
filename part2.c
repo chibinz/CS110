@@ -177,7 +177,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
         break;
 
     case 7: /* func3 = 0x7 is and. */
-        inst.rtype.rd = inst.rtype.rs1 & inst.rtype.rs2;
+        p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] & p->R[inst.rtype.rs2];
         break;
 
     default:
