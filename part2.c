@@ -69,6 +69,8 @@ void execute_instruction(Instruction inst, Processor *p UNUSED, Byte *memory UNU
 
 void execute_rtype(Instruction inst, Processor *p UNUSED)
 {
+    sDouble tmp;
+
     switch (inst.rtype.funct3)
     {
     case 0: /* func3 = 0x0 is add, mul or sub. */
@@ -101,7 +103,8 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
             break;
 
         case 1: /* func7 = 1 is mulh.(high) */
-            p->R[inst.rtype.rd] = ((Double)((sDouble)(sWord)(p->R[inst.rtype.rs2])*(sDouble)(sWord)(p->R[inst.rtype.rs1]))) / 4294967296;
+            tmp = (sDouble)(sWord)(p->R[inst.rtype.rs2]) * (sDouble)(sWord)(p->R[inst.rtype.rs1]);
+            p->R[inst.rtype.rd] = (Word)((Double)tmp >> 32);
             break;
 
         default:
@@ -141,11 +144,11 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
         switch (inst.rtype.funct7)
         {
         case 0: /* func7 = 0x0 is srl. */
-            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] >> (sWord)(p->R[inst.rtype.rs2]);
+            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] >> p->R[inst.rtype.rs2];
             break;
 
         case 32: /* func7 = 0x20 is sra. */
-            p->R[inst.rtype.rd] = (sWord)(p->R[inst.rtype.rs1]) >> (sWord)(p->R[inst.rtype.rs2]);
+            p->R[inst.rtype.rd] = (sWord)(p->R[inst.rtype.rs1]) >> (p->R[inst.rtype.rs2]);
             break;
 
         default:
@@ -188,8 +191,6 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
 
 void execute_itype_except_load(Instruction inst, Processor *p UNUSED)
 {
-    int shiftOp;
-    shiftOp = -1;
     switch (inst.itype.funct3)
     {
     case 0: /* func3 = 0x0 is addi */
@@ -201,11 +202,11 @@ void execute_itype_except_load(Instruction inst, Processor *p UNUSED)
         break;
 
     case 2: /* func3 = 0x2 is slti. */
-        p->R[inst.itype.rd] = ((sWord)(p->R[inst.itype.rs1]) < get_imm_operand(inst)) ? 1 : 0;
+        p->R[inst.itype.rd] = (sWord)(p->R[inst.itype.rs1]) < (sWord)get_imm_operand(inst) ? 1 : 0;
         break;
 
     case 3: /* ........... is sltiu. */
-        p->R[inst.itype.rd] = ((Word)(p->R[inst.itype.rs1]) < (unsigned int)get_imm_operand(inst)) ? 1 : 0;
+        p->R[inst.itype.rd] = (Word)(p->R[inst.itype.rs1]) < (Word)get_imm_operand(inst) ? 1 : 0;
         break;
 
     case 4: /* ... is xori.*/
@@ -220,15 +221,7 @@ void execute_itype_except_load(Instruction inst, Processor *p UNUSED)
             break;
 
         case 32: /* ... is srai. */
-            if (p->R[inst.rtype.rs1] >= 2147483648)
-            {
-                p->R[inst.rtype.rd] = (p->R[inst.rtype.rs1] >> get_imm_operand(inst)) /*+ 1*/;
-                p->R[inst.rtype.rd] += shiftOp << (32 - get_imm_operand(inst)); /* pad the front part by 1. */
-            }
-            else
-            {
-                p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] >> get_imm_operand(inst);
-            }
+            p->R[inst.itype.rd] = (sWord)p->R[inst.itype.rs1] >> get_imm_operand(inst);
             break;
 
         default:
@@ -329,32 +322,30 @@ void execute_branch(Instruction inst, Processor *p UNUSED)
 }
 
 void execute_load(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
-{  
-    int tmp = 0;
+{
+    Word tmp;
     switch (inst.itype.funct3)
     {
     case 0: /* lb */ /* Check what is check_align later. */
-        tmp = (int)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_BYTE, 0);
-        if(tmp >= 8) tmp += 4294967280; /* FFFF FFF0 */
-        p->R[inst.itype.rd] = tmp;
+        tmp = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_BYTE, 0);
+        p->R[inst.itype.rd] = bitSigner(tmp, 8);
         break;
 
     case 1: /* lh */
-        tmp = (int)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_HALF_WORD, 0);
-        if(tmp > 32768) tmp += 4294901760; /* FFFF 0000 */
-        p->R[inst.itype.rd] = tmp;
+        tmp = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_HALF_WORD, 0);
+        p->R[inst.itype.rd] = bitSigner(tmp, 16);
         break;
 
     case 2: /* lw */
-        p->R[inst.itype.rd] = (int)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_WORD, 0);
+        p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_WORD, 0);
         break;
 
     case 4: /* lbu */ /* check unsigned later. */
-        p->R[inst.itype.rd] = (Byte)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_BYTE, 0);
+        p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_BYTE, 0);
         break;
 
     case 5: /* lhu */
-        p->R[inst.itype.rd] = (Half)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_HALF_WORD, 0);
+        p->R[inst.itype.rd] = load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_HALF_WORD, 0);
         break;
 
     default:
@@ -472,6 +463,7 @@ void store(Byte *memory UNUSED, Address address, Alignment alignment, Word value
     }
 }
 
+/* Should return unsigned number */
 Word load(Byte *memory UNUSED, Address address, Alignment alignment, int check_align)
 {
     Word data = 0; /* initialize our return value to zero */
@@ -481,19 +473,18 @@ Word load(Byte *memory UNUSED, Address address, Alignment alignment, int check_a
         handle_invalid_read(address);
     }
 
-    /* YOUR CODE HERE */
     switch (alignment)
     {
     case LENGTH_BYTE:
-        data = *((sByte *)(memory + address));
+        data = *((Byte *)(memory + address));
         break;
 
     case LENGTH_HALF_WORD:
-        data = *((sHalf *)(memory + address));
+        data = *((Half *)(memory + address));
         break;
 
     case LENGTH_WORD:
-        data = *((sWord *)(memory + address));
+        data = *((Word *)(memory + address));
         break;
 
     default:
@@ -502,5 +493,3 @@ Word load(Byte *memory UNUSED, Address address, Alignment alignment, int check_a
 
     return data;
 }
-
-
