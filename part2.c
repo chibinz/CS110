@@ -99,7 +99,7 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
         switch (inst.rtype.funct7)
         {
         case 0: /* func7 = 0x0 is sll. */
-            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] << (sWord)(p->R[inst.rtype.rs2]);
+            p->R[inst.rtype.rd] = p->R[inst.rtype.rs1] << p->R[inst.rtype.rs2];
             break;
 
         case 1: /* func7 = 1 is mulh.(high) */
@@ -115,10 +115,10 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
         break;
 
     case 2: /* func3 = 0x2 is slt. */
-        p->R[inst.rtype.rd] = ((sWord)(p->R[inst.rtype.rs1]) < (sWord)(p->R[inst.rtype.rs2])) ? 1 : 0;
+        p->R[inst.rtype.rd] = (sWord)(p->R[inst.rtype.rs1]) < (sWord)(p->R[inst.rtype.rs2]) ? 1 : 0;
         break;
 
-    case 3: /* func3 = 0x3 is slut. */
+    case 3: /* func3 = 0x3 is sltu. */
         p->R[inst.rtype.rd] = ((Word)(p->R[inst.rtype.rs1]) < (Word)(p->R[inst.rtype.rs2])) ? 1 : 0;
         break;
 

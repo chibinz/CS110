@@ -5,23 +5,16 @@
 /* You may find implementing this function helpful */
 int bitSigner(unsigned int field UNUSED, unsigned int size UNUSED)
 {
-    int tmp;
-    tmp = field >> (size - 1);      /* Get the most significant bit */
-    if (tmp == 1)                   /* If it is 1, it is negative. */
-        return field - (1 << size); /* 2^size - tmp makes it be the corresponding negative number. */
-    else
-    {
-        return field;
-    }
+    /* If bit size - 1 is set, fill bits above size - 1 */
+    unsigned extension = field & (1 << (size - 1)) ? ~((1 << (size - 1)) - 1) : 0;
+
+    return field | extension;
 }
 
 /* Get the immediate of the typical I-TYPE instruction. */
 int get_imm_operand(Instruction inst UNUSED)
 {
-    if (inst.opcode.opcode == 19 && inst.itype.funct3 == 5 && inst.itype.imm >> 5 == 32) /* This is srai. */
-        return inst.itype.imm % 32;
-    else
-        return bitSigner(inst.itype.imm, 12);
+    return bitSigner(inst.itype.imm, 12);
 }
 
 /* Remember that the offsets should return the offset in BYTES */
