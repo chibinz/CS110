@@ -452,22 +452,23 @@ void store(Byte *memory UNUSED, Address address, Alignment alignment, Word value
         handle_invalid_write(address);
     }
     /* YOUR CODE HERE */
-    switch (alignment)
-    {
-    case LENGTH_BYTE:
-        *(memory + address) = value % 16;
-        break;
-
-    case LENGTH_HALF_WORD:
-        *((Half *)(memory + address)) = value;
-        break;
-
-    case LENGTH_WORD:
-        *((Word *)(memory + address)) = value;
-        break;
-
-    default:
-        break;
+    switch(alignment){
+        case LENGTH_BYTE:
+            memory[address + 0] = value & 0xFF;
+            break;
+        case LENGTH_HALF_WORD:
+            memory[address + 0] = value & 0xFF;
+            memory[address + 1] = (value >> 8) & 0xFF;
+            break;
+        case LENGTH_WORD:
+            memory[address + 0] = value & 0xFF;
+            memory[address + 1] = (value >> 8) & 0xFF;
+            memory[address + 2] = (value >> 16) & 0xFF;
+            memory[address + 3] = (value >> 24) & 0xFF;
+            break;
+        default:
+            exit(-1);
+            break;
     }
 }
 
