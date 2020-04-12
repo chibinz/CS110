@@ -389,8 +389,10 @@ void execute_jal(Instruction inst UNUSED, Processor *p UNUSED)
 void execute_jalr(Instruction inst UNUSED, Processor *p UNUSED)
 {
     /* . */
+    Word tmp;
+    tmp = p->R[inst.itype.rd];
     p->R[inst.itype.rd] = p->PC + 4;
-    p->PC = p->R[inst.itype.rs1] + get_imm_operand(inst);
+    p->PC = tmp + get_imm_operand(inst);
 }
 
 void execute_utype(Instruction inst, Processor *p UNUSED)
