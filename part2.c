@@ -390,7 +390,7 @@ void execute_jalr(Instruction inst UNUSED, Processor *p UNUSED)
 {
     /* . */
     Word tmp;
-    tmp = p->R[inst.itype.rd];
+    tmp = p->R[inst.itype.rs1];
     p->R[inst.itype.rd] = p->PC + 4;
     p->PC = tmp + get_imm_operand(inst);
 }
