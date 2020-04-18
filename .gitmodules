@@ -4,3 +4,6 @@
 [submodule "homework/hw5_parallel_sssp"]
 	path = homework/hw5_parallel_sssp
 	url = https://autolab.sist.shanghaitech.edu.cn/gitlab/zhangchb1/hw-5-framework.git
+[submodule "project/project2_simulator"]
+	path = project/project2_simulator
+	url = https://autolab.sist.shanghaitech.edu.cn/gitlab/zhangchb1/p2.1_framework.git
