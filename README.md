@@ -23,6 +23,7 @@ Check if you already have the following files after pulling.
 
 ```
 .
+├── .gitattributes
 ├── README.md
 ├── autolab.txt
 ├── alu.circ
