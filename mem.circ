@@ -72,7 +72,6 @@
     <tool name="RAM">
       <a name="addrWidth" val="24"/>
       <a name="dataWidth" val="32"/>
-      <a name="databus" val="bibus"/>
     </tool>
     <tool name="ROM">
       <a name="contents">addr/data: 8 8
@@ -89,7 +88,7 @@
       <a name="valign" val="base"/>
     </tool>
   </lib>
-  <main name="main"/>
+  <main name="mem"/>
   <options>
     <a name="gateUndefined" val="ignore"/>
     <a name="simlimit" val="1000"/>
@@ -121,8 +120,8 @@
     <tool lib="1" name="AND Gate"/>
     <tool lib="1" name="OR Gate"/>
   </toolbar>
-  <circuit name="main">
-    <a name="circuit" val="main"/>
+  <circuit name="mem">
+    <a name="circuit" val="mem"/>
     <a name="clabel" val=""/>
     <a name="clabelup" val="east"/>
     <a name="clabelfont" val="SansSerif plain 12"/>
@@ -136,61 +135,50 @@
       <text font-family="SansSerif" font-size="12" text-anchor="middle" x="86" y="104">WriteData</text>
       <text font-family="SansSerif" font-size="12" text-anchor="middle" x="89" y="74">WriteAddr</text>
       <text font-family="SansSerif" font-size="12" text-anchor="middle" x="191" y="85">ReadData</text>
-      <circ-port height="8" pin="200,140" width="8" x="46" y="66"/>
-      <circ-port height="8" pin="200,240" width="8" x="46" y="96"/>
-      <circ-port height="8" pin="140,320" width="8" x="46" y="126"/>
-      <circ-port height="8" pin="140,370" width="8" x="46" y="156"/>
-      <circ-port height="10" pin="610,140" width="10" x="225" y="75"/>
+      <circ-port height="10" pin="680,330" width="10" x="225" y="75"/>
+      <circ-port height="8" pin="200,330" width="8" x="46" y="96"/>
+      <circ-port height="8" pin="200,240" width="8" x="46" y="66"/>
+      <circ-port height="8" pin="310,310" width="8" x="46" y="156"/>
+      <circ-port height="8" pin="310,290" width="8" x="46" y="126"/>
       <circ-anchor facing="east" height="6" width="6" x="227" y="77"/>
     </appear>
-    <wire from="(570,140)" to="(570,280)"/>
-    <wire from="(240,280)" to="(330,280)"/>
-    <wire from="(310,200)" to="(330,200)"/>
-    <wire from="(310,260)" to="(330,260)"/>
-    <wire from="(140,320)" to="(260,320)"/>
-    <wire from="(310,260)" to="(310,370)"/>
-    <wire from="(280,250)" to="(330,250)"/>
-    <wire from="(240,240)" to="(240,280)"/>
-    <wire from="(200,140)" to="(250,140)"/>
-    <wire from="(570,140)" to="(610,140)"/>
-    <wire from="(260,240)" to="(260,320)"/>
-    <wire from="(140,370)" to="(310,370)"/>
-    <wire from="(200,240)" to="(240,240)"/>
-    <wire from="(250,200)" to="(290,200)"/>
-    <wire from="(260,240)" to="(330,240)"/>
-    <wire from="(250,140)" to="(250,200)"/>
-    <comp lib="0" loc="(200,140)" name="Pin">
-      <a name="width" val="32"/>
-      <a name="label" val="WriteAddr"/>
+    <wire from="(320,240)" to="(380,240)"/>
+    <wire from="(330,300)" to="(380,300)"/>
+    <wire from="(620,330)" to="(680,330)"/>
+    <wire from="(310,310)" to="(380,310)"/>
+    <wire from="(310,290)" to="(380,290)"/>
+    <wire from="(200,330)" to="(380,330)"/>
+    <wire from="(200,240)" to="(300,240)"/>
+    <wire from="(380,240)" to="(380,250)"/>
+    <comp lib="4" loc="(380,240)" name="RAM">
+      <a name="addrWidth" val="24"/>
+      <a name="dataWidth" val="32"/>
+      <a name="databus" val="bibus"/>
+      <a name="label" val="DMEM"/>
     </comp>
-    <comp lib="0" loc="(200,240)" name="Pin">
-      <a name="width" val="32"/>
-      <a name="label" val="WriteData"/>
-    </comp>
-    <comp lib="0" loc="(140,320)" name="Pin">
-      <a name="label" val="MemRW"/>
-    </comp>
-    <comp lib="0" loc="(140,370)" name="Pin">
-      <a name="label" val="clk"/>
-    </comp>
-    <comp lib="0" loc="(610,140)" name="Pin">
+    <comp lib="0" loc="(680,330)" name="Pin">
       <a name="facing" val="west"/>
       <a name="output" val="true"/>
       <a name="width" val="32"/>
       <a name="label" val="ReadData"/>
       <a name="labelloc" val="east"/>
     </comp>
-    <comp lib="6" loc="(395,67)" name="Text">
-      <a name="text" val="DMEM"/>
-      <a name="font" val="SansSerif plain 40"/>
+    <comp lib="0" loc="(200,330)" name="Pin">
+      <a name="width" val="32"/>
+      <a name="label" val="WriteData"/>
     </comp>
-    <comp lib="4" loc="(330,190)" name="RAM">
-      <a name="addrWidth" val="24"/>
-      <a name="dataWidth" val="32"/>
-      <a name="databus" val="bibus"/>
-      <a name="label" val="DMEM"/>
+    <comp lib="0" loc="(200,240)" name="Pin">
+      <a name="width" val="32"/>
+      <a name="label" val="WriteAddr"/>
     </comp>
-    <comp lib="0" loc="(290,200)" name="Splitter">
+    <comp lib="0" loc="(330,300)" name="Constant"/>
+    <comp lib="0" loc="(310,310)" name="Pin">
+      <a name="label" val="clk"/>
+    </comp>
+    <comp lib="0" loc="(310,290)" name="Pin">
+      <a name="label" val="MemRW"/>
+    </comp>
+    <comp lib="0" loc="(300,240)" name="Splitter">
       <a name="fanout" val="1"/>
       <a name="incoming" val="32"/>
       <a name="appear" val="center"/>
@@ -226,9 +214,6 @@
       <a name="bit29" val="none"/>
       <a name="bit30" val="none"/>
       <a name="bit31" val="none"/>
-    </comp>
-    <comp lib="0" loc="(280,250)" name="Power">
-      <a name="facing" val="south"/>
     </comp>
   </circuit>
 </project>
