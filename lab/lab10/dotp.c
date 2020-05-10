@@ -35,15 +35,33 @@ dotp_naive (double *x, double *y, int arr_size)
 double
 dotp_manual_optimized (double *x, double *y, int arr_size)
 {
-  double global_sum = 0.0;
+  int nt;
+
   #pragma omp parallel
   {
-    #pragma omp for
-    for (int i = 0; i < arr_size; i++)
-      #pragma omp critical
-      global_sum += x[i] * y[i];
+    nt = omp_get_num_threads();
   }
-  return global_sum;
+
+  double *sums = calloc(nt, sizeof(double));
+
+  #pragma omp parallel
+  {
+    int tid = omp_get_thread_num();
+    double each_sum = 0.0;
+
+    for (int i = tid; i < arr_size; i += nt)
+      each_sum += x[i] * y[i];
+
+    sums[tid] = each_sum;
+  }
+
+  double sum = 0;
+  for(int i = 0; i < nt; i++)
+    sum += sums[i];
+
+  free(sums);
+
+  return sum;
 }
 
 // EDIT THIS FUNCTION PART 2
@@ -51,13 +69,11 @@ double
 dotp_reduction_optimized (double *x, double *y, int arr_size)
 {
   double global_sum = 0.0;
-  #pragma omp parallel
-  {
-    #pragma omp for
-    for (int i = 0; i < arr_size; i++)
-      #pragma omp critical
-      global_sum += x[i] * y[i];
-  }
+
+  #pragma omp parallel for reduction(+:global_sum)
+  for (int i = 0; i < arr_size; i++)
+    global_sum += x[i] * y[i];
+
   return global_sum;
 }
 
@@ -73,7 +89,7 @@ int main ()
   start_time = omp_get_wtime ();
   for (int j = 0; j < REPEAT; j++)
     {
-      serial_result = 0.0；
+      serial_result = 0.0;
       for (int i = 0; i < array_size; i++)
         serial_result += x[i] * y[i];
     }
@@ -95,6 +111,7 @@ int main ()
       // verify result is correct (within some threshold)
       if (fabs (serial_result - result) > 0.001)
         {
+          printf("%g %g %g", serial_result, result, serial_result - result);
           printf("Incorrect result!\n");
           ret = -1;
           goto exit;
