@@ -187,6 +187,7 @@
     <comp lib="4" loc="(330,190)" name="RAM">
       <a name="addrWidth" val="24"/>
       <a name="dataWidth" val="32"/>
+      <a name="trigger" val="falling"/>
       <a name="databus" val="bibus"/>
       <a name="label" val="DMEM"/>
     </comp>
