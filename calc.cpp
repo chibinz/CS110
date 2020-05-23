@@ -24,5 +24,3 @@ calc (int n, const int *a, const int *b, int *c)
     c[k] = sum;
   }
 }
-
-
