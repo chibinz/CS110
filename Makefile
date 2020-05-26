@@ -1,7 +1,7 @@
-ARCH = x86-64
+ARCH = skylake
 
 ifndef DEBUG
-	CXXFLAGS = -march=$(ARCH) -O2 -fopenmp -pthread
+	CXXFLAGS = -mavx512f -O2 -fopenmp -pthread
 else
 	CXXFLAGS = -march=$(ARCH) -g -fopenmp -pthread
 endif
@@ -16,4 +16,3 @@ clean:
 	$(RM) calc *.o
 
 .PHONY: clean
-
