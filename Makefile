@@ -1,7 +1,7 @@
-ARCH = skylake
+ARCH = haswell
 
 ifndef DEBUG
-	CXXFLAGS = -mavx512f -O2 -fopenmp -pthread
+	CXXFLAGS = -march=$(ARCH) -O2 -fopenmp -pthread
 else
 	CXXFLAGS = -march=$(ARCH) -g -fopenmp -pthread
 endif
