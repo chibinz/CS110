@@ -2,270 +2,161 @@
 #include <numeric>
 #include <immintrin.h>
 #include <iostream>
+#include <omp.h>
 
-
-#ifdef __AVX512BW__
-
-constexpr int stride = 2048;
-constexpr int vector_len = 32;
-constexpr int quad_len = 4 * vector_len;
-
-void
-calc (int n, const int *a, const int *b, int *c)
-{
-  short *as, *bs;
-  as = (short *)malloc(n * sizeof(short));
-  bs = (short *)malloc(n * sizeof(short));
-
-  #pragma omp parallel for
-  for(int i = 0; i < n; i++)
-  {
-    as[i] = a[i];
-    bs[i] = b[i];
-  }
-
-  #pragma omp parallel for schedule(dynamic)
-  for(int ci = 0; ci < n / stride * stride; ci += stride)
-  {
-    for(int bi = 0; bi < (n - ci - stride)/stride * stride; bi += stride)
-    {
-      for(int cj = ci; cj < ci + stride; cj ++)
-      {
-        __m512i sumv = _mm512_setzero_si512();
-        for(int bj = bi; bj < bi + stride; bj += quad_len)
-        {
-          sumv = _mm512_add_epi16(
-                    sumv, _mm512_mullo_epi16(
-                              _mm512_loadu_si512((__m512i *)(as + bj + cj)),
-                              _mm512_loadu_si512((__m512i *)(bs + bj))));
-
-          sumv = _mm512_add_epi16(
-                    sumv, _mm512_mullo_epi16(
-                              _mm512_loadu_si512((__m512i *)(as + vector_len + bj + cj)),
-                              _mm512_loadu_si512((__m512i *)(bs + vector_len + bj))));
-
-          sumv = _mm512_add_epi16(
-                    sumv, _mm512_mullo_epi16(
-                              _mm512_loadu_si512((__m512i *)(as + vector_len * 2 + bj + cj)),
-                              _mm512_loadu_si512((__m512i *)(bs + vector_len * 2 + bj))));
-
-          sumv = _mm512_add_epi16(
-                    sumv, _mm512_mullo_epi16(
-                              _mm512_loadu_si512((__m512i *)(as + vector_len * 3 + bj + cj)),
-                              _mm512_loadu_si512((__m512i *)(bs + vector_len * 3+ bj))));
-          //c[cj] += as[cj + bj] * bs[bj];
-        }
-        unsigned short suma[vector_len];
-        _mm512_storeu_si512((__m512i *)suma, sumv);
-        c[cj] = std::accumulate(suma, suma + vector_len, c[cj]);
-      }
-    }
-
-    for(int cj = ci; cj < ci + stride; cj ++)
-    {
-      __m512i sumv = _mm512_setzero_si512();
-      for(int bj = (n - stride - ci)/ stride * stride; bj < (n - cj) / quad_len * quad_len; bj += quad_len)
-      {
-        sumv = _mm512_add_epi16(
-                  sumv, _mm512_mullo_epi16(
-                            _mm512_loadu_si512((__m512i *)(as + bj + cj)),
-                            _mm512_loadu_si512((__m512i *)(bs + bj))));
-
-        sumv = _mm512_add_epi16(
-                  sumv, _mm512_mullo_epi16(
-                            _mm512_loadu_si512((__m512i *)(as + vector_len + bj + cj)),
-                            _mm512_loadu_si512((__m512i *)(bs + vector_len + bj))));
-
-        sumv = _mm512_add_epi16(
-                  sumv, _mm512_mullo_epi16(
-                            _mm512_loadu_si512((__m512i *)(as + vector_len * 2 + bj + cj)),
-                            _mm512_loadu_si512((__m512i *)(bs + vector_len * 2 + bj))));
-
-        sumv = _mm512_add_epi16(
-                  sumv, _mm512_mullo_epi16(
-                            _mm512_loadu_si512((__m512i *)(as + vector_len * 3 + bj + cj)),
-                            _mm512_loadu_si512((__m512i *)(bs + vector_len * 3+ bj))));
-      }
-      unsigned short suma[vector_len];
-      _mm512_storeu_si512((__m512i *)suma, sumv);
-      c[cj] = std::accumulate(suma, suma + vector_len, c[cj]);
-
-      for(int bj = (n - cj) / quad_len * quad_len; bj < n - cj; bj++)
-      {
-        c[cj] += as[cj + bj] * bs[bj];
-      }
-    }
-  }
-
-  for(int cj = n / stride * stride; cj < n; cj++)
-  {
-    __m512i sumv = _mm512_setzero_si512();
-    for(int bj = 0; bj < (n - cj) / quad_len * quad_len; bj += quad_len)
-    {
-      sumv = _mm512_add_epi16(
-                sumv, _mm512_mullo_epi16(
-                          _mm512_loadu_si512((__m512i *)(as + bj + cj)),
-                          _mm512_loadu_si512((__m512i *)(bs + bj))));
-
-      sumv = _mm512_add_epi16(
-                sumv, _mm512_mullo_epi16(
-                          _mm512_loadu_si512((__m512i *)(as + vector_len + bj + cj)),
-                          _mm512_loadu_si512((__m512i *)(bs + vector_len + bj))));
-
-      sumv = _mm512_add_epi16(
-                sumv, _mm512_mullo_epi16(
-                          _mm512_loadu_si512((__m512i *)(as + vector_len * 2 + bj + cj)),
-                          _mm512_loadu_si512((__m512i *)(bs + vector_len * 2 + bj))));
-
-      sumv = _mm512_add_epi16(
-                sumv, _mm512_mullo_epi16(
-                          _mm512_loadu_si512((__m512i *)(as + vector_len * 3 + bj + cj)),
-                          _mm512_loadu_si512((__m512i *)(bs + vector_len * 3 + bj))));
-    }
-    unsigned short suma[vector_len];
-    _mm512_storeu_si512((__m512i *)suma, sumv);
-    c[cj] = std::accumulate(suma, suma + vector_len, c[cj]);
-
-    for(int bj = (n - cj) / quad_len * quad_len; bj < n - cj; bj++)
-    {
-      c[cj] += as[cj + bj] * bs[bj];
-    }
-  }
-
-  free(as);
-  free(bs);
-}
-
-#else
-
-constexpr int stride = 2048;
+constexpr int block = 4;
 constexpr int vector_len = 16;
-constexpr int quad_len = 4 * vector_len;
+constexpr int chunk = 1024;
+constexpr int stride = block * vector_len;
 
-void
-calc (int n, const int *a, const int *b, int *c)
+#define action(__i)                                                                                                    \
+  btmp = _mm256_loadu_si256((__m256i *)(bs + __i));                                                                    \
+  sumv0 = _mm256_add_epi32(_mm256_madd_epi16(_mm256_loadu_si256((__m256i *)(as + __i + k + 0)), btmp), sumv0);         \
+  sumv1 = _mm256_add_epi32(_mm256_madd_epi16(_mm256_loadu_si256((__m256i *)(as + __i + k + 1)), btmp), sumv1);         \
+  sumv2 = _mm256_add_epi32(_mm256_madd_epi16(_mm256_loadu_si256((__m256i *)(as + __i + k + 2)), btmp), sumv2);         \
+  sumv3 = _mm256_add_epi32(_mm256_madd_epi16(_mm256_loadu_si256((__m256i *)(as + __i + k + 3)), btmp), sumv3)
+
+void calc(int n, const int *a, const int *b, int *c)
 {
-  short *as, *bs;
-  as = (short *)malloc(n * sizeof(short));
-  bs = (short *)malloc(n * sizeof(short));
+  auto as = (short *)malloc(n * sizeof(short));
+  auto bs = (short *)malloc(n * sizeof(short));
 
-  #pragma omp parallel for
-  for(int i = 0; i < n; i++)
+#pragma omp parallel for
+  for (int i = 0; i < n; i++)
   {
     as[i] = a[i];
     bs[i] = b[i];
   }
 
-  #pragma omp parallel for schedule(dynamic)
-  for(int ci = 0; ci < n / stride * stride; ci += stride)
+#pragma omp parallel for schedule(dynamic)
+  for (int k = 0; k < n / block * block; k += block)
   {
-    for(int bi = 0; bi < (n - ci - stride)/stride * stride; bi += stride)
+    __m256i btmp;
+
+
+    for(int j = 0; j < (n - k - block) / chunk * chunk; j += chunk)
     {
-      for(int cj = ci; cj < ci + stride; cj ++)
+      auto sumv0 = _mm256_setzero_si256();
+      auto sumv1 = _mm256_setzero_si256();
+      auto sumv2 = _mm256_setzero_si256();
+      auto sumv3 = _mm256_setzero_si256();
+      for (int i = j; i < j + chunk; i += stride)
       {
-        __m256i sumv = _mm256_setzero_si256();
-        for(int bj = bi; bj < bi + stride; bj += quad_len)
-        {
-          sumv = _mm256_add_epi16(
-                    sumv, _mm256_mullo_epi16(
-                              _mm256_loadu_si256((__m256i *)(as + bj + cj)),
-                              _mm256_loadu_si256((__m256i *)(bs + bj))));
-
-          sumv = _mm256_add_epi16(
-                    sumv, _mm256_mullo_epi16(
-                              _mm256_loadu_si256((__m256i *)(as + vector_len + bj + cj)),
-                              _mm256_loadu_si256((__m256i *)(bs + vector_len + bj))));
-
-          sumv = _mm256_add_epi16(
-                    sumv, _mm256_mullo_epi16(
-                              _mm256_loadu_si256((__m256i *)(as + vector_len * 2 + bj + cj)),
-                              _mm256_loadu_si256((__m256i *)(bs + vector_len * 2 + bj))));
-
-          sumv = _mm256_add_epi16(
-                    sumv, _mm256_mullo_epi16(
-                              _mm256_loadu_si256((__m256i *)(as + vector_len * 3 + bj + cj)),
-                              _mm256_loadu_si256((__m256i *)(bs + vector_len * 3+ bj))));
-          //c[cj] += as[cj + bj] * bs[bj];
-        }
-        unsigned short suma[16];
-        _mm256_storeu_si256((__m256i *)suma, sumv);
-        c[cj] = std::accumulate(suma, suma + vector_len, c[cj]);
+        // Load btmp once, use 4 times
+        action(i);
+        action(i + vector_len);
+        action(i + vector_len * 2);
+        action(i + vector_len * 3);
       }
+      int sum0[8], sum1[8], sum2[8], sum3[8];
+
+      _mm256_storeu_si256((__m256i*) sum0, sumv0);
+      _mm256_storeu_si256((__m256i*) sum1, sumv1);
+      _mm256_storeu_si256((__m256i*) sum2, sumv2);
+      _mm256_storeu_si256((__m256i*) sum3, sumv3);
+
+      c[k] += sum0[0];
+      c[k] += sum0[1];
+      c[k] += sum0[2];
+      c[k] += sum0[3];
+      c[k] += sum0[4];
+      c[k] += sum0[5];
+      c[k] += sum0[6];
+      c[k] += sum0[7];
+
+      c[k + 1] += sum1[0];
+      c[k + 1] += sum1[1];
+      c[k + 1] += sum1[2];
+      c[k + 1] += sum1[3];
+      c[k + 1] += sum1[4];
+      c[k + 1] += sum1[5];
+      c[k + 1] += sum1[6];
+      c[k + 1] += sum1[7];
+
+      c[k + 2] += sum2[0];
+      c[k + 2] += sum2[1];
+      c[k + 2] += sum2[2];
+      c[k + 2] += sum2[3];
+      c[k + 2] += sum2[4];
+      c[k + 2] += sum2[5];
+      c[k + 2] += sum2[6];
+      c[k + 2] += sum2[7];
+
+      c[k + 3] += sum3[0];
+      c[k + 3] += sum3[1];
+      c[k + 3] += sum3[2];
+      c[k + 3] += sum3[3];
+      c[k + 3] += sum3[4];
+      c[k + 3] += sum3[5];
+      c[k + 3] += sum3[6];
+      c[k + 3] += sum3[7];
     }
 
-    for(int cj = ci; cj < ci + stride; cj ++)
+    auto sumv0 = _mm256_setzero_si256();
+    auto sumv1 = _mm256_setzero_si256();
+    auto sumv2 = _mm256_setzero_si256();
+    auto sumv3 = _mm256_setzero_si256();
+
+    for (int i = (n - k - block) / chunk * chunk; i < (n - k - block) / stride * stride; i += stride)
     {
-      __m256i sumv = _mm256_setzero_si256();
-      for(int bj = (n - stride - ci)/ stride * stride; bj < (n - cj) / quad_len * quad_len; bj += quad_len)
-      {
-        sumv = _mm256_add_epi16(
-                  sumv, _mm256_mullo_epi16(
-                            _mm256_loadu_si256((__m256i *)(as + bj + cj)),
-                            _mm256_loadu_si256((__m256i *)(bs + bj))));
-
-        sumv = _mm256_add_epi16(
-                  sumv, _mm256_mullo_epi16(
-                            _mm256_loadu_si256((__m256i *)(as + vector_len + bj + cj)),
-                            _mm256_loadu_si256((__m256i *)(bs + vector_len + bj))));
-
-        sumv = _mm256_add_epi16(
-                  sumv, _mm256_mullo_epi16(
-                            _mm256_loadu_si256((__m256i *)(as + vector_len * 2 + bj + cj)),
-                            _mm256_loadu_si256((__m256i *)(bs + vector_len * 2 + bj))));
-
-        sumv = _mm256_add_epi16(
-                  sumv, _mm256_mullo_epi16(
-                            _mm256_loadu_si256((__m256i *)(as + vector_len * 3 + bj + cj)),
-                            _mm256_loadu_si256((__m256i *)(bs + vector_len * 3+ bj))));
-      }
-      unsigned short suma[16];
-      _mm256_storeu_si256((__m256i *)suma, sumv);
-      c[cj] = std::accumulate(suma, suma + vector_len, c[cj]);
-
-      for(int bj = (n - cj) / quad_len * quad_len; bj < n - cj; bj++)
-      {
-        c[cj] += as[cj + bj] * bs[bj];
-      }
+      action(i);
+      action(i + vector_len);
+      action(i + vector_len * 2);
+      action(i + vector_len * 3);
     }
+
+    int sum0[8], sum1[8], sum2[8], sum3[8];
+
+    _mm256_storeu_si256((__m256i*) sum0, sumv0);
+    _mm256_storeu_si256((__m256i*) sum1, sumv1);
+    _mm256_storeu_si256((__m256i*) sum2, sumv2);
+    _mm256_storeu_si256((__m256i*) sum3, sumv3);
+
+    c[k] += sum0[0];
+    c[k] += sum0[1];
+    c[k] += sum0[2];
+    c[k] += sum0[3];
+    c[k] += sum0[4];
+    c[k] += sum0[5];
+    c[k] += sum0[6];
+    c[k] += sum0[7];
+
+    c[k + 1] += sum1[0];
+    c[k + 1] += sum1[1];
+    c[k + 1] += sum1[2];
+    c[k + 1] += sum1[3];
+    c[k + 1] += sum1[4];
+    c[k + 1] += sum1[5];
+    c[k + 1] += sum1[6];
+    c[k + 1] += sum1[7];
+
+    c[k + 2] += sum2[0];
+    c[k + 2] += sum2[1];
+    c[k + 2] += sum2[2];
+    c[k + 2] += sum2[3];
+    c[k + 2] += sum2[4];
+    c[k + 2] += sum2[5];
+    c[k + 2] += sum2[6];
+    c[k + 2] += sum2[7];
+
+    c[k + 3] += sum3[0];
+    c[k + 3] += sum3[1];
+    c[k + 3] += sum3[2];
+    c[k + 3] += sum3[3];
+    c[k + 3] += sum3[4];
+    c[k + 3] += sum3[5];
+    c[k + 3] += sum3[6];
+    c[k + 3] += sum3[7];
+
+    for (int i = 0; i < block; i++)
+      for (int j = (n - k - block) / stride * stride; j < n - k - i; j++)
+        c[k + i] += a[j + k + i] * b[j];
   }
 
-  for(int cj = n / stride * stride; cj < n; cj++)
-  {
-    __m256i sumv = _mm256_setzero_si256();
-    for(int bj = 0; bj < (n - cj) / quad_len * quad_len; bj += quad_len)
-    {
-      sumv = _mm256_add_epi16(
-                sumv, _mm256_mullo_epi16(
-                          _mm256_loadu_si256((__m256i *)(as + bj + cj)),
-                          _mm256_loadu_si256((__m256i *)(bs + bj))));
-
-      sumv = _mm256_add_epi16(
-                sumv, _mm256_mullo_epi16(
-                          _mm256_loadu_si256((__m256i *)(as + vector_len + bj + cj)),
-                          _mm256_loadu_si256((__m256i *)(bs + vector_len + bj))));
-
-      sumv = _mm256_add_epi16(
-                sumv, _mm256_mullo_epi16(
-                          _mm256_loadu_si256((__m256i *)(as + vector_len * 2 + bj + cj)),
-                          _mm256_loadu_si256((__m256i *)(bs + vector_len * 2 + bj))));
-
-      sumv = _mm256_add_epi16(
-                sumv, _mm256_mullo_epi16(
-                          _mm256_loadu_si256((__m256i *)(as + vector_len * 3 + bj + cj)),
-                          _mm256_loadu_si256((__m256i *)(bs + vector_len * 3 + bj))));
-    }
-    unsigned short suma[16];
-    _mm256_storeu_si256((__m256i *)suma, sumv);
-    c[cj] = std::accumulate(suma, suma + vector_len, c[cj]);
-
-    for(int bj = (n - cj) / quad_len * quad_len; bj < n - cj; bj++)
-    {
-      c[cj] += as[cj + bj] * bs[bj];
-    }
-  }
+  for (int k = n / block * block; k < n; k++)
+    for (int i = 0; i < n - k; i++)
+      c[k] += a[i + k] * b[i];
 
   free(as);
   free(bs);
 }
-
-#endif

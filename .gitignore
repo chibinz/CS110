@@ -1,4 +1,5 @@
 *.in
 *.out
 *.ref
+.clang-format
 .vscode/
