@@ -6,6 +6,7 @@
 
 constexpr int block = 4;
 constexpr int vector_len = 32;
+constexpr int half_len = vector_len / 2;
 constexpr int chunk = 1024;
 constexpr int stride = block * vector_len;
 
@@ -28,17 +29,18 @@ void calc(int n, const int *a, const int *b, int *c)
     bs[i] = b[i];
   }
 
-#pragma omp parallel for schedule(dynamic)
-  for (int k = 0; k < n / block * block; k += block)
+#pragma omp parallel
+  for (int k = block * omp_get_thread_num(); k < n / block * block; k += block * omp_get_num_threads())
   {
-    __m256i btmp;
+    __m256i btmp, sumv0, sumv1, sumv2, sumv3;
+    unsigned short sum0[half_len], sum1[half_len], sum2[half_len], sum3[half_len];
 
     for (int j = 0; j < (n - k - block) / chunk * chunk; j += chunk)
     {
-      auto sumv0 = _mm256_setzero_si256();
-      auto sumv1 = _mm256_setzero_si256();
-      auto sumv2 = _mm256_setzero_si256();
-      auto sumv3 = _mm256_setzero_si256();
+      sumv0 = _mm256_setzero_si256();
+      sumv1 = _mm256_setzero_si256();
+      sumv2 = _mm256_setzero_si256();
+      sumv3 = _mm256_setzero_si256();
 
       for (int i = j; i < j + chunk; i += stride)
       {
@@ -49,14 +51,12 @@ void calc(int n, const int *a, const int *b, int *c)
         action(i + vector_len * 3);
       }
 
-      unsigned short sum0[16], sum1[16], sum2[16], sum3[16];
-
       _mm256_storeu_si256((__m256i *)sum0, sumv0);
       _mm256_storeu_si256((__m256i *)sum1, sumv1);
       _mm256_storeu_si256((__m256i *)sum2, sumv2);
       _mm256_storeu_si256((__m256i *)sum3, sumv3);
 
-      for (int i = 0; i < 16; i++)
+      for (int i = 0; i < half_len; i++)
       {
         c[k] += sum0[i];
         c[k + 1] += sum1[i];
@@ -65,10 +65,10 @@ void calc(int n, const int *a, const int *b, int *c)
       }
     }
 
-    auto sumv0 = _mm256_setzero_si256();
-    auto sumv1 = _mm256_setzero_si256();
-    auto sumv2 = _mm256_setzero_si256();
-    auto sumv3 = _mm256_setzero_si256();
+    sumv0 = _mm256_setzero_si256();
+    sumv1 = _mm256_setzero_si256();
+    sumv2 = _mm256_setzero_si256();
+    sumv3 = _mm256_setzero_si256();
 
     for (int i = (n - k - block) / chunk * chunk; i < (n - k - block) / stride * stride; i += stride)
     {
@@ -78,14 +78,12 @@ void calc(int n, const int *a, const int *b, int *c)
       action(i + vector_len * 3);
     }
 
-    unsigned short sum0[16], sum1[16], sum2[16], sum3[16];
-
     _mm256_storeu_si256((__m256i *)sum0, sumv0);
     _mm256_storeu_si256((__m256i *)sum1, sumv1);
     _mm256_storeu_si256((__m256i *)sum2, sumv2);
     _mm256_storeu_si256((__m256i *)sum3, sumv3);
 
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < half_len; i++)
     {
       c[k] += sum0[i];
       c[k + 1] += sum1[i];
