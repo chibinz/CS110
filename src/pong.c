@@ -9,9 +9,6 @@
 #define RIGHT 150
 #define LEFT 10
 
-#define abs(x) x > 0 ? x : -(x)
-#define sign(x) x > 0 ? 1 : -1
-
 typedef struct
 {
     // Top left coordinate
@@ -47,78 +44,56 @@ ball pong;
 
 int ticks = 1;
 
-void pad_tick(pad *p)
+void draw_ball(ball *b, u16 color)
 {
-    if (Get_Button(0))
-        p->y += 2;
-    else if (Get_Button(1))
-        p->y -= 2;
-
-
-
-
-    p->y = p->y <= TOP ? TOP : p->y;
-    p->y = p->y + p->length >= DOWN ? DOWN - p->length : p->y;
+    LCD_Fill(b->x, b->y, b->x + b->size, b->y + b->size, color);
 }
 
-void cpu_tick(pad *p) { p->y = pong.y - (p->length / 2); }
-
-void ball_tick(ball *b)
+void draw_pad(pad *p, u16 color)
 {
-    b->x += b->vx;
-    b->y += b->vy;
+    LCD_Fill(p->x, p->y, p->x + p->width, p->y + p->length, color);
 }
 
-void collide_pad(ball *b, pad *p)
+void draw_score(int s, int x, u16 color)
 {
-    // On collision reverse pong's horizontal velocity
-    if ((b->y >= p->y) && (b->y <= p->y + p->length))
-    {
-        if (b->x <= LEFT + p->width)
-        {
-            b->vx = ((rand() % 3) + 1);
-            b->vy = (rand() % 7) - 3;
-        }
-        else if (b->x + b->size >= RIGHT)
-        {
-            b->vx = -((rand() % 3) + 1);
-            b->vy = (rand() % 7) - 3;
-        }
-    }
+    LCD_ShowNum(80 - x, 0, s, 1, color);
 }
 
-void collide_wall(ball *b)
+void draw_midline(u16 color) { LCD_DrawLine(80, 0, 80, 80, color); }
+
+void clear()
 {
-    // On collision reverse pong's vertical velocity
-    if (b->y <= TOP || b->y >= DOWN)
-    {
-        b->vy = -(b->vy);
-    }
+    // Clear
+    draw_ball(&pong, BLACK);
+    draw_pad(&p1, BLACK);
+    draw_pad(&p2, BLACK);
+    draw_midline(WHITE);
+}
+
+void draw()
+{
+    // Draw
+    draw_ball(&pong, GREEN);
+    draw_pad(&p1, RED);
+    draw_pad(&p2, BLUE);
+
+    delay_1ms(20);
 }
 
 void reset()
 {
-
     srand(ticks);
 
-    p1.x = LEFT;
-    p2.x = RIGHT;
-    p1.y = p2.y = 40;
-    p1.length = p2.length = 20;
-    p1.width = p2.width = 4;
+    init();
 
-    pong.x = 80;
-    pong.y = 40;
-    pong.size = 2;
-    while (pong.vx == 0)
-    {
-        pong.vx = (rand() % 7) - 3;
-        pong.vy = (rand() % 7) - 3;
-    }
+    LCD_Clear(BLACK);
 }
 
 void score(ball *b)
 {
+    draw_score(s1, -10, BLACK);
+    draw_score(s2, 10, BLACK);
+
     if (b->x + b->size >= 160)
     {
         s2++;
@@ -129,4 +104,46 @@ void score(ball *b)
         s1++;
         reset();
     }
+
+    draw_score(s1, -10, WHITE);
+    draw_score(s2, 10, WHITE);
+}
+
+void tick()
+{
+    clear();
+
+    ticks += 1;
+
+    ball_tick(&pong);
+
+    cpu_tick(&p1);
+    pad_tick(&p2);
+
+    ball *b = &pong;
+    pad *p = &p1;
+    if ((b->y >= p->y) && (b->y <= p->y + p->length))
+    {
+        if (b->x <= LEFT + p->width)
+        {
+            b->vx = ((rand() % 3) + 1);
+            b->vy = (rand() % 7) - 3;
+        }
+    }
+
+    p = &p2;
+    if ((b->y >= p->y) && (b->y <= p->y + p->length))
+    {
+        if (b->x + b->size >= RIGHT)
+        {
+            b->vx = -((rand() % 3) + 1);
+            b->vy = (rand() % 7) - 3;
+        }
+    }
+
+    collide_wall(&pong);
+    score(&pong);
+
+    // Draw pad, ball, midline, score, etc.
+    draw();
 }
