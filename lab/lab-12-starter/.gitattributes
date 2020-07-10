@@ -1,0 +1,2 @@
+seqFiles/complete-works-mark-twain.txt.seq filter=lfs diff=lfs merge=lfs -text
+textFiles/complete-works-mark-twain.txt filter=lfs diff=lfs merge=lfs -text
