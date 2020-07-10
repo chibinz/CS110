@@ -5,3 +5,7 @@
 *.ref
 .clang-format
 logisim-evolution.jar
+.DS_Store
+riscv.dSYM
+riscv
+riscvcode/out
