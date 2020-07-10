@@ -1,3 +1,7 @@
 .vscode/
 *.o
+*.in
+*.out
+*.ref
+.clang-format
 logisim-evolution.jar
