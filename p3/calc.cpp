@@ -110,6 +110,7 @@ void calc(int n, const int *a, const int *b, int *c)
 
 constexpr int block = 4;
 constexpr int vector_len = 32;
+constexpr int half_len = vector_len / 2;
 constexpr int chunk = 1024;
 constexpr int stride = block * vector_len;
 
@@ -136,7 +137,7 @@ void calc(int n, const int *a, const int *b, int *c)
   for (int k = 0; k < n / block * block; k += block)
   {
     __m256i btmp, sumv0, sumv1, sumv2, sumv3;
-    unsigned short sum0[16], sum1[16], sum2[16], sum3[16];
+    unsigned short sum0[half_len], sum1[half_len], sum2[half_len], sum3[half_len];
 
     for (int j = 0; j < (n - k - block) / chunk * chunk; j += chunk)
     {
@@ -159,7 +160,7 @@ void calc(int n, const int *a, const int *b, int *c)
       _mm256_storeu_si256((__m256i *)sum2, sumv2);
       _mm256_storeu_si256((__m256i *)sum3, sumv3);
 
-      for (int i = 0; i < 16; i++)
+      for (int i = 0; i < half_len; i++)
       {
         c[k] += sum0[i];
         c[k + 1] += sum1[i];
@@ -186,7 +187,7 @@ void calc(int n, const int *a, const int *b, int *c)
     _mm256_storeu_si256((__m256i *)sum2, sumv2);
     _mm256_storeu_si256((__m256i *)sum3, sumv3);
 
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < half_len; i++)
     {
       c[k] += sum0[i];
       c[k + 1] += sum1[i];
@@ -206,3 +207,5 @@ void calc(int n, const int *a, const int *b, int *c)
   free(as);
   free(bs);
 }
+
+#endif
