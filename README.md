@@ -1,4 +1,6 @@
 # CS110
+上海科技大学计算机体系结构课程
+
 This repository holds the semester-long effort of my excellent partner @huiwy and me. A detailed description of each homework, lab, project, and complimentary lecture and tutorial can be found on the [official course webpage](https://autolab.sist.shanghaitech.edu.cn/courses/ca/20s/).
 
 ![](cpu_circ.png)
