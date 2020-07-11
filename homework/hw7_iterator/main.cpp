@@ -14,7 +14,6 @@ using namespace __detail;
 //     std::cout << "\n";
 // }
 
-
 int main()
 {
     int a[] = {1, 2, 3, 4, 5};
@@ -58,7 +57,6 @@ int main()
     // nit = it++;
     // std::cout << nit.p - it.p << "-\n";
 
-
     // it = vec.end();
     // --it;
 
@@ -72,15 +70,14 @@ int main()
     auto begin = vec.begin();
     auto end = vec.end();
 
-    for(auto it = vec.begin(); it != vec.end(); it++)
+    for (auto it = vec.begin(); it != vec.end(); it++)
         std::cout << *it << " a\n";
 
     vec.insert(end, 101);
     vec.insert(begin, 909);
 
-    for(auto it = vec.begin(); it != vec.end(); it++)
+    for (auto it = vec.begin(); it != vec.end(); it++)
         std::cout << *it << " a\n";
-
 
     delete ve;
 

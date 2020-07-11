@@ -3,7 +3,8 @@
 
 #include "vector.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     vector_t *v;
 
     printf("Calling vector_new()\n");

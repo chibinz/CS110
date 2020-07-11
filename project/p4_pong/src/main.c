@@ -1,6 +1,6 @@
 #include "lcd/lcd.h"
-#include <string.h>
 #include "utils.h"
+#include <string.h>
 
 void Inp_init(void)
 {

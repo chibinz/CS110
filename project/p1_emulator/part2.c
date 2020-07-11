@@ -213,7 +213,7 @@ void execute_itype_except_load(Instruction inst, Processor *p UNUSED)
         p->R[inst.itype.rd] = p->R[inst.itype.rs1] ^ get_imm_operand(inst);
         break;
 
-    case 5:/*..............*/
+    case 5: /*..............*/
         switch (inst.rtype.funct7)
         {
         case 0: /* ... is srli. */
@@ -269,7 +269,7 @@ void execute_ecall(Processor *p UNUSED, Byte *memory UNUSED)
         printf("%c", p->R[11]); /* Print a1(x11) as a char. */
         break;
 
-    default:                                     /* undefined ecall */
+    default:                                           /* undefined ecall */
         printf("Illegal ecall number %d\n", p->R[10]); /* What stores the ecall arg? */
         exit(-1);
         break;
@@ -303,13 +303,11 @@ void execute_branch(Instruction inst, Processor *p UNUSED)
         break;
 
     case 6: /* bltu */
-        offset =
-            ((Word)p->R[inst.sbtype.rs1] < (Word)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
+        offset = ((Word)p->R[inst.sbtype.rs1] < (Word)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
         break;
 
     case 7: /* bgeu */
-        offset =
-            ((Word)p->R[inst.sbtype.rs1] >= (Word)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
+        offset = ((Word)p->R[inst.sbtype.rs1] >= (Word)p->R[inst.sbtype.rs2]) ? get_branch_offset(inst) : 4;
         break;
 
     default:
@@ -445,23 +443,24 @@ void store(Byte *memory UNUSED, Address address, Alignment alignment, Word value
         handle_invalid_write(address);
     }
     /* YOUR CODE HERE */
-    switch(alignment){
-        case LENGTH_BYTE:
-            memory[address + 0] = value & 0xFF;
-            break;
-        case LENGTH_HALF_WORD:
-            memory[address + 0] = value & 0xFF;
-            memory[address + 1] = (value >> 8) & 0xFF;
-            break;
-        case LENGTH_WORD:
-            memory[address + 0] = value & 0xFF;
-            memory[address + 1] = (value >> 8) & 0xFF;
-            memory[address + 2] = (value >> 16) & 0xFF;
-            memory[address + 3] = (value >> 24) & 0xFF;
-            break;
-        default:
-            exit(-1);
-            break;
+    switch (alignment)
+    {
+    case LENGTH_BYTE:
+        memory[address + 0] = value & 0xFF;
+        break;
+    case LENGTH_HALF_WORD:
+        memory[address + 0] = value & 0xFF;
+        memory[address + 1] = (value >> 8) & 0xFF;
+        break;
+    case LENGTH_WORD:
+        memory[address + 0] = value & 0xFF;
+        memory[address + 1] = (value >> 8) & 0xFF;
+        memory[address + 2] = (value >> 16) & 0xFF;
+        memory[address + 3] = (value >> 24) & 0xFF;
+        break;
+    default:
+        exit(-1);
+        break;
     }
 }
 

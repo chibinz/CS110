@@ -1,8 +1,8 @@
 // #include <stdbool.h>
-#include <stdlib.h>
-#include <time.h>
 #include "lcd/lcd.h"
 #include "utils.h"
+#include <stdlib.h>
+#include <time.h>
 
 #define TOP 10
 #define DOWN 70
@@ -54,14 +54,14 @@ void pad_tick(pad *p)
     else if (Get_Button(1))
         p->y -= 2;
 
-
-
-
     p->y = p->y <= TOP ? TOP : p->y;
     p->y = p->y + p->length >= DOWN ? DOWN - p->length : p->y;
 }
 
-void cpu_tick(pad *p) { p->y = pong.y - (p->length / 2); }
+void cpu_tick(pad *p)
+{
+    p->y = pong.y - (p->length / 2);
+}
 
 void ball_tick(ball *b)
 {
@@ -141,9 +141,15 @@ void draw_pad(pad *p)
     LCD_Fill(p->x, p->y, p->x + p->width, p->y + p->length, RED);
 }
 
-void draw_score(int s, int x) { LCD_ShowNum(80 - x, 0, s, 1, WHITE); }
+void draw_score(int s, int x)
+{
+    LCD_ShowNum(80 - x, 0, s, 1, WHITE);
+}
 
-void draw_midline() { LCD_DrawLine(80, 0, 80, 80, WHITE); }
+void draw_midline()
+{
+    LCD_DrawLine(80, 0, 80, 80, WHITE);
+}
 
 void draw()
 {

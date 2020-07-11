@@ -1,28 +1,28 @@
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
 #include "vector.h"
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 /***** METHODS *****/
-/* For following methods which has return type INT, return VECTOR_ERROR 
-   if any error(s) occured, return VECTOR_SUCCESS for operation is done 
+/* For following methods which has return type INT, return VECTOR_ERROR
+   if any error(s) occured, return VECTOR_SUCCESS for operation is done
    successfully. */
-static bool vector_is_full(Vector* vector)
+static bool vector_is_full(Vector *vector)
 {
     return vector->size == vector->capacity;
 }
 
 /* Return size of vector data in bytes */
-static size_t vector_data_size(Vector* vector)
+static size_t vector_data_size(Vector *vector)
 {
     return vector->size * vector->element_size;
 }
 
 /* Vector capacity *= 2 */
-static void vector_grow(Vector* vector)
+static void vector_grow(Vector *vector)
 {
     /* Declare local variable */
-    void* new_data;
+    void *new_data;
 
     /* Grow vector */
     vector->capacity *= VECTOR_GROWTH_FACTOR;
@@ -35,16 +35,18 @@ static void vector_grow(Vector* vector)
 }
 
 /* Grow if full*/
-static void vector_attempt_grow(Vector* vector)
+static void vector_attempt_grow(Vector *vector)
 {
-    if(vector_is_full(vector)) vector_grow(vector);
+    if (vector_is_full(vector))
+        vector_grow(vector);
 }
 
 /* Constructor, set CAPACITY and ELEMENT_SIZE to VECTOR, alloc memory for DATA */
-int vector_init(Vector* vector, size_t capacity, size_t element_size)
+int vector_init(Vector *vector, size_t capacity, size_t element_size)
 {
     /* Return early if vector == NULL */
-    if(vector == NULL) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
 
     /* Set attribute */
     vector->size = 0;
@@ -59,12 +61,15 @@ int vector_init(Vector* vector, size_t capacity, size_t element_size)
 
 /* Copy Constructor, destination should be an **UNINITIALIZED** vector.
    You should copy the memory, instead of changing the pointers only. */
-int vector_copy(Vector* destination, Vector* source)
+int vector_copy(Vector *destination, Vector *source)
 {
     /* Error handling */
-    if(destination == NULL) return VECTOR_ERROR;
-    if(source == NULL) return VECTOR_ERROR;
-    if(source->data == VECTOR_UNINITIALIZED) return VECTOR_ERROR;
+    if (destination == NULL)
+        return VECTOR_ERROR;
+    if (source == NULL)
+        return VECTOR_ERROR;
+    if (source->data == VECTOR_UNINITIALIZED)
+        return VECTOR_ERROR;
 
     /* Init fields */
     vector_init(destination, source->capacity, source->element_size);
@@ -77,11 +82,13 @@ int vector_copy(Vector* destination, Vector* source)
 }
 
 /* Destructor, please free all memory allocated */
-int vector_destroy(Vector* vector)
+int vector_destroy(Vector *vector)
 {
     /* Error handling */
-    if(vector == NULL) return VECTOR_ERROR;
-    if(vector->data == VECTOR_UNINITIALIZED) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (vector->data == VECTOR_UNINITIALIZED)
+        return VECTOR_ERROR;
 
     /* Free and set NULL */
     free(vector->data);
@@ -91,16 +98,18 @@ int vector_destroy(Vector* vector)
 }
 
 /* Insertion */
-int vector_push_back(Vector* vector, void* element)
+int vector_push_back(Vector *vector, void *element)
 {
     /* Error handling */
-    if(vector == NULL) return VECTOR_ERROR;
-    if(element == NULL) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (element == NULL)
+        return VECTOR_ERROR;
 
     vector_attempt_grow(vector);
 
     /* Copy data */
-    memcpy((char*)vector->data + vector_data_size(vector), element, vector->element_size);
+    memcpy((char *)vector->data + vector_data_size(vector), element, vector->element_size);
 
     vector->size += 1;
 
@@ -108,17 +117,19 @@ int vector_push_back(Vector* vector, void* element)
 }
 
 /* Insert in front */
-int vector_push_front(Vector* vector, void* element)
+int vector_push_front(Vector *vector, void *element)
 {
     /* Error handling */
-    if(vector == NULL) return VECTOR_ERROR;
-    if(element == NULL) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (element == NULL)
+        return VECTOR_ERROR;
 
     vector_attempt_grow(vector);
 
     /* Shift orginal data right */
-    if(vector->size > 0)
-        memmove((char*)vector->data + vector->element_size, vector->data, vector_data_size(vector));
+    if (vector->size > 0)
+        memmove((char *)vector->data + vector->element_size, vector->data, vector_data_size(vector));
 
     /* Copy element into buffer */
     memcpy(vector->data, element, vector->element_size);
@@ -128,26 +139,29 @@ int vector_push_front(Vector* vector, void* element)
 }
 
 /* Insert ELEMENT to INDEX, move all elements which index > INDEX right by one time */
-int vector_insert(Vector* vector, size_t index, void* element)
+int vector_insert(Vector *vector, size_t index, void *element)
 {
-    char* addr;         /* Address of data corresponding to index */
-    size_t move_size;   /* Size of data to be moved right in bytes */
+    char *addr;       /* Address of data corresponding to index */
+    size_t move_size; /* Size of data to be moved right in bytes */
 
     /* Error handling */
-    if(vector == NULL) return VECTOR_ERROR;
-    if(element == NULL) return VECTOR_ERROR;
-    if(index > vector->size) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (element == NULL)
+        return VECTOR_ERROR;
+    if (index > vector->size)
+        return VECTOR_ERROR;
 
     /* Grow if needed */
     vector_attempt_grow(vector);
 
     /* Calculate offset */
-    addr = (char*)vector->data + vector->element_size * index; 
+    addr = (char *)vector->data + vector->element_size * index;
     move_size = (vector->size - index) * vector->element_size;
-    
+
     /* Move data to the left by one element */
     memmove(addr + vector->element_size, addr, move_size);
-    memcpy(addr, element, vector->element_size); 
+    memcpy(addr, element, vector->element_size);
 
     vector->size += 1;
 
@@ -155,27 +169,34 @@ int vector_insert(Vector* vector, size_t index, void* element)
 }
 
 /* Just assign VECTOR[INDEX] = ELEMENT, you should not move any elements */
-int vector_assign(Vector* vector, size_t index, void* element)
+int vector_assign(Vector *vector, size_t index, void *element)
 {
     /* Error handling */
-    if(vector == NULL) return VECTOR_ERROR;
-    if(element == NULL) return VECTOR_ERROR;
-    if(vector->data == VECTOR_UNINITIALIZED) return VECTOR_ERROR;
-    if(index >= vector->size) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (element == NULL)
+        return VECTOR_ERROR;
+    if (vector->data == VECTOR_UNINITIALIZED)
+        return VECTOR_ERROR;
+    if (index >= vector->size)
+        return VECTOR_ERROR;
 
     /* Copy element into buffer */
-    memcpy(vector_get(vector, index), element, vector->element_size); 
+    memcpy(vector_get(vector, index), element, vector->element_size);
 
-    return VECTOR_SUCCESS; 
+    return VECTOR_SUCCESS;
 }
 
 /* Delete the right-most element */
-int vector_pop_back(Vector* vector)
+int vector_pop_back(Vector *vector)
 {
     /* Error handling */
-    if(vector == NULL) return VECTOR_ERROR;
-    if(vector->data == VECTOR_UNINITIALIZED) return VECTOR_ERROR;
-    if(vector_is_empty(vector)) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (vector->data == VECTOR_UNINITIALIZED)
+        return VECTOR_ERROR;
+    if (vector_is_empty(vector))
+        return VECTOR_ERROR;
 
     /* Decrement size */
     vector->size -= 1;
@@ -184,40 +205,47 @@ int vector_pop_back(Vector* vector)
 }
 
 /* Delete element at INDEX = 0, move all other elements left by one */
-int vector_pop_front(Vector* vector)
+int vector_pop_front(Vector *vector)
 {
     /* Error handling */
-    if(vector == NULL) return VECTOR_ERROR;
-    if(vector->data == VECTOR_UNINITIALIZED) return VECTOR_ERROR;
-    if(vector_is_empty(vector)) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (vector->data == VECTOR_UNINITIALIZED)
+        return VECTOR_ERROR;
+    if (vector_is_empty(vector))
+        return VECTOR_ERROR;
 
     /* Decrement size */
     vector->size -= 1;
 
     /* Shift data left */
-    if(vector->size > 0)
-        memmove(vector->data, (char*)vector->data + vector->element_size, vector_data_size(vector));
+    if (vector->size > 0)
+        memmove(vector->data, (char *)vector->data + vector->element_size, vector_data_size(vector));
 
     return VECTOR_SUCCESS;
 }
 
 /* Delete element at INDEX, move all rhs elements left by one */
-int vector_erase(Vector* vector, size_t index)
+int vector_erase(Vector *vector, size_t index)
 {
-    char* addr;         /* Address of data corresponding to index */
-    size_t move_size;   /* Size of data to be moved left in bytes */
+    char *addr;       /* Address of data corresponding to index */
+    size_t move_size; /* Size of data to be moved left in bytes */
 
     /* Error handling */
-    if(vector == NULL) return VECTOR_ERROR;
-    if(vector->data == VECTOR_UNINITIALIZED) return VECTOR_ERROR;
-    if(vector_is_empty(vector)) return VECTOR_ERROR;
-    if(index >= vector->size) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (vector->data == VECTOR_UNINITIALIZED)
+        return VECTOR_ERROR;
+    if (vector_is_empty(vector))
+        return VECTOR_ERROR;
+    if (index >= vector->size)
+        return VECTOR_ERROR;
 
     /* Move data to the left by one element */
     addr = vector_get(vector, index);
     move_size = (vector->size - index - 1) * vector->element_size;
 
-    if(move_size > 0)
+    if (move_size > 0)
         memmove(addr, addr + vector->element_size, move_size);
 
     /* Decrement size */
@@ -227,11 +255,13 @@ int vector_erase(Vector* vector, size_t index)
 }
 
 /* Delete all elements in the vector */
-int vector_clear(Vector* vector)
+int vector_clear(Vector *vector)
 {
     /* Error handling */
-    if(vector == NULL) return VECTOR_ERROR;
-    if(vector->data == VECTOR_UNINITIALIZED) return VECTOR_ERROR;
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (vector->data == VECTOR_UNINITIALIZED)
+        return VECTOR_ERROR;
 
     vector->size = 0;
 
@@ -240,50 +270,58 @@ int vector_clear(Vector* vector)
 
 /* Lookup */
 /* Returns VECTOR[INDEX] */
-void* vector_get(Vector* vector, size_t index)
+void *vector_get(Vector *vector, size_t index)
 {
     /* Error handling */
-    if(vector == NULL) return NULL;
-    if(vector->data == VECTOR_UNINITIALIZED) return NULL;
-    if(index >= vector->size) return NULL;
+    if (vector == NULL)
+        return NULL;
+    if (vector->data == VECTOR_UNINITIALIZED)
+        return NULL;
+    if (index >= vector->size)
+        return NULL;
 
-    return (char*)vector->data + vector->element_size * index;
+    return (char *)vector->data + vector->element_size * index;
 }
 
 /* Returns VECTOR[0] */
-void* vector_front(Vector* vector)
+void *vector_front(Vector *vector)
 {
     return vector_get(vector, 0);
 }
 
 /* Returns VECTOR[-1] */
-void* vector_back(Vector* vector)
+void *vector_back(Vector *vector)
 {
     return vector_get(vector, vector->size - 1);
 }
 
 /* Information */
 /* Returns size of VECTOR */
-size_t vector_size(const Vector* vector)
-{    
-    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED) return 0;
+size_t vector_size(const Vector *vector)
+{
+    if (vector == NULL || vector->data == VECTOR_UNINITIALIZED)
+        return 0;
     return vector->size;
 }
 
 /* Returns TRUE if VECTOR is empty(i.e. size == 0) */
-bool vector_is_empty(const Vector* vector)
+bool vector_is_empty(const Vector *vector)
 {
-    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED) return false;
+    if (vector == NULL || vector->data == VECTOR_UNINITIALIZED)
+        return false;
     return vector->size == 0;
 }
 
 /* Memory management */
-int vector_resize(Vector* vector, size_t new_size)
+int vector_resize(Vector *vector, size_t new_size)
 {
-    if(vector == NULL) return VECTOR_ERROR;
-    if(vector->data == VECTOR_UNINITIALIZED) return VECTOR_ERROR;
-    
-    while(vector->capacity < new_size) vector_grow(vector);
+    if (vector == NULL)
+        return VECTOR_ERROR;
+    if (vector->data == VECTOR_UNINITIALIZED)
+        return VECTOR_ERROR;
+
+    while (vector->capacity < new_size)
+        vector_grow(vector);
 
     /* update size */
     vector->size = new_size;
@@ -292,12 +330,12 @@ int vector_resize(Vector* vector, size_t new_size)
 }
 
 /* Return vector[0] */
-Iterator vector_begin(Vector* vector)
+Iterator vector_begin(Vector *vector)
 {
     Iterator i;
 
     /* Error handling */
-    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED || vector_is_empty(vector))
+    if (vector == NULL || vector->data == VECTOR_UNINITIALIZED || vector_is_empty(vector))
     {
         i.element_size = 0;
         i.pointer = NULL;
@@ -313,12 +351,12 @@ Iterator vector_begin(Vector* vector)
 }
 
 /* Return vector[-1] */
-Iterator vector_end(Vector* vector)
+Iterator vector_end(Vector *vector)
 {
     Iterator i;
 
     /* Error handling */
-    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED || vector_is_empty(vector))
+    if (vector == NULL || vector->data == VECTOR_UNINITIALIZED || vector_is_empty(vector))
     {
         i.element_size = 0;
         i.pointer = NULL;
@@ -328,18 +366,18 @@ Iterator vector_end(Vector* vector)
 
     /* Set attribute */
     i.element_size = vector->element_size;
-    i.pointer = (char*)vector->data + vector->size * vector->element_size;
+    i.pointer = (char *)vector->data + vector->size * vector->element_size;
 
     return i;
 }
 
 /* Returns an iterator points to vector[index] */
-Iterator vector_iterator(Vector* vector, size_t index)
+Iterator vector_iterator(Vector *vector, size_t index)
 {
     Iterator i;
 
     /* Error handling */
-    if(vector == NULL || vector->data == VECTOR_UNINITIALIZED || vector_is_empty(vector) || index >= vector->size)
+    if (vector == NULL || vector->data == VECTOR_UNINITIALIZED || vector_is_empty(vector) || index >= vector->size)
     {
         i.element_size = 0;
         i.pointer = NULL;
@@ -355,44 +393,49 @@ Iterator vector_iterator(Vector* vector, size_t index)
 }
 
 /* Returns the element, similar to `operator *()' in C++ */
-void* iterator_get(Iterator* iterator)
+void *iterator_get(Iterator *iterator)
 {
-    if(iterator == NULL) return NULL;
+    if (iterator == NULL)
+        return NULL;
     return iterator->pointer;
 }
 
 /* Similar to `operator++()' in C++ */
-void iterator_increment(Iterator* iterator)
+void iterator_increment(Iterator *iterator)
 {
-    if(iterator == NULL) return;
-    iterator->pointer = (char*)iterator->pointer + iterator->element_size;
+    if (iterator == NULL)
+        return;
+    iterator->pointer = (char *)iterator->pointer + iterator->element_size;
 }
 
 /* Similar to `operator--()' in C++ */
-void iterator_decrement(Iterator* iterator)
+void iterator_decrement(Iterator *iterator)
 {
-    if(iterator == NULL) return;
-    iterator->pointer = (char*)iterator->pointer - iterator->element_size;
+    if (iterator == NULL)
+        return;
+    iterator->pointer = (char *)iterator->pointer - iterator->element_size;
 }
 
 /* Similar to `operator==(Iterator second)' in C++ */
-bool iterator_equals(Iterator* first, Iterator* second)
+bool iterator_equals(Iterator *first, Iterator *second)
 {
-    if(first == NULL) return false;
-    if(second == NULL) return false;
+    if (first == NULL)
+        return false;
+    if (second == NULL)
+        return false;
 
     /* Comments */
     return first->pointer == second->pointer;
 }
 
-static void vector_swap(Vector* vector, size_t a, size_t b)
+static void vector_swap(Vector *vector, size_t a, size_t b)
 {
     /* Get element address */
-    void* a_addr = vector_get(vector, a);
-    void* b_addr = vector_get(vector, b);
-    
+    void *a_addr = vector_get(vector, a);
+    void *b_addr = vector_get(vector, b);
+
     /* Allocate temp */
-    void* temp = malloc(vector->element_size);
+    void *temp = malloc(vector->element_size);
 
     /* Swap a, b */
     memcpy(temp, a_addr, vector->element_size);
@@ -404,17 +447,17 @@ static void vector_swap(Vector* vector, size_t a, size_t b)
 }
 
 /* Sort the vector in nondecreasing according to comparision function less.
-     You can implement any sorting algorithm you want such as bubble sort 
-	 or quick sort.	 There is no strict time or space limit. */
-void vector_sort(Vector* vector, vector_less_func *less)
+     You can implement any sorting algorithm you want such as bubble sort
+     or quick sort.	 There is no strict time or space limit. */
+void vector_sort(Vector *vector, vector_less_func *less)
 {
     size_t i, j;
 
     /* Insert sort */
-    for(i = 1; i < vector->size; i++)
-        for(j = i; j > 0; j--)
+    for (i = 1; i < vector->size; i++)
+        for (j = i; j > 0; j--)
             /* Compare using less */
-            if(less(vector_get(vector, j), vector_get(vector, j - 1)))
+            if (less(vector_get(vector, j), vector_get(vector, j - 1)))
                 vector_swap(vector, j, j - 1);
             else
                 break;

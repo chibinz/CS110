@@ -13,27 +13,24 @@
 
 namespace __detail
 {
-    // Iterator of vector (implement this)
-    template <typename _Tp>
-    class __iterator;
+// Iterator of vector (implement this)
+template <typename _Tp> class __iterator;
 
-   // Const iterator of vector (implement this)
-    template <typename _Tp>
-    class __const_iterator;
-}
+// Const iterator of vector (implement this)
+template <typename _Tp> class __const_iterator;
+} // namespace __detail
 
-template <typename _Tp>
-class vector
+template <typename _Tp> class vector
 {
-public:
+  public:
     // Type renaming
-    typedef size_t                                          size_type;
-    typedef _Tp                                             value_type;
-    typedef _Tp*                                            pointer;
-    typedef _Tp&                                            reference;
-    typedef const _Tp&                                      const_reference;
-    typedef ptrdiff_t                                       difference_type;
-    typedef typename __detail::__iterator<_Tp>       iterator;
+    typedef size_t size_type;
+    typedef _Tp value_type;
+    typedef _Tp *pointer;
+    typedef _Tp &reference;
+    typedef const _Tp &const_reference;
+    typedef ptrdiff_t difference_type;
+    typedef typename __detail::__iterator<_Tp> iterator;
     typedef typename __detail::__const_iterator<_Tp> const_iterator;
 
     // Default constructor
@@ -52,8 +49,8 @@ public:
     ~vector();
 
     // Copy and move assignment operator are deleted
-    vector& operator=(const vector &other) = delete;
-    vector& operator=(vector &&other) = delete;
+    vector &operator=(const vector &other) = delete;
+    vector &operator=(vector &&other) = delete;
 
     // Subscript access to the data contains in the vector
     reference operator[](size_type n);
@@ -85,7 +82,7 @@ public:
     // Remove last element
     void pop_back();
 
-private:
+  private:
     size_type _M_size;
     size_type _M_capacity;
     pointer _M_data;

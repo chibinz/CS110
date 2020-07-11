@@ -127,8 +127,8 @@ static unsigned nearest()
         pthread_join(thread[i], NULL);
 
     /* Iterate through dist to find nearest node on the frontier */
-    for(unsigned i = 0; i < nt; i++)
-        if(min[i] < m)
+    for (unsigned i = 0; i < nt; i++)
+        if (min[i] < m)
             m = min[i], idx = ind[i];
 
     return idx;

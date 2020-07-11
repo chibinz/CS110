@@ -49,7 +49,10 @@ int sign(int a)
     return a > 0 ? 1 : -1;
 }
 
-void cpu_tick(pad *p) { p->y = pong.y - (p->length / 2); }
+void cpu_tick(pad *p)
+{
+    p->y = pong.y - (p->length / 2);
+}
 
 void pad_tick(pad *p)
 {
@@ -61,7 +64,6 @@ void pad_tick(pad *p)
     p->y = p->y <= TOP ? TOP : p->y;
     p->y = p->y + p->length >= DOWN ? DOWN - p->length : p->y;
 }
-
 
 void ball_tick(ball *b)
 {

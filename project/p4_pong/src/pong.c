@@ -1,8 +1,8 @@
 // #include <stdbool.h>
-#include <stdlib.h>
-#include <time.h>
 #include "lcd/lcd.h"
 #include "utils.h"
+#include <stdlib.h>
+#include <time.h>
 
 #define TOP 10
 #define DOWN 70
@@ -59,7 +59,10 @@ void draw_score(int s, int x, u16 color)
     LCD_ShowNum(80 - x, 0, s, 1, color);
 }
 
-void draw_midline(u16 color) { LCD_DrawLine(80, 0, 80, 80, color); }
+void draw_midline(u16 color)
+{
+    LCD_DrawLine(80, 0, 80, 80, color);
+}
 
 void clear()
 {

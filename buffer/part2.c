@@ -103,7 +103,8 @@ void execute_rtype(Instruction inst, Processor *p UNUSED)
             break;
 
         case 1: /* func7 = 1 is mulh.(high) */
-            p->R[inst.rtype.rd] = ((sDouble)(sWord)p->R[inst.rtype.rs1] * (sDouble)(sWord)p->R[inst.rtype.rs2]) / 4294967296;
+            p->R[inst.rtype.rd] =
+                ((sDouble)(sWord)p->R[inst.rtype.rs1] * (sDouble)(sWord)p->R[inst.rtype.rs2]) / 4294967296;
             break;
 
         default:
@@ -340,19 +341,21 @@ void execute_branch(Instruction inst, Processor *p UNUSED)
 }
 
 void execute_load(Instruction inst, Processor *p UNUSED, Byte *memory UNUSED)
-{  
+{
     int tmp = 0;
     switch (inst.itype.funct3)
     {
     case 0: /* lb */ /* Check what is check_align later. */
         tmp = (int)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_BYTE, 0);
-        if(tmp >= 8) tmp += 4294967280; /* FFFF FFF0 */
+        if (tmp >= 8)
+            tmp += 4294967280; /* FFFF FFF0 */
         p->R[inst.itype.rd] = tmp;
         break;
 
     case 1: /* lh */
         tmp = (int)load(memory, p->R[inst.itype.rs1] + get_imm_operand(inst), LENGTH_HALF_WORD, 0);
-        if(tmp > 32768) tmp += 4294901760; /* FFFF 0000 */
+        if (tmp > 32768)
+            tmp += 4294901760; /* FFFF 0000 */
         p->R[inst.itype.rd] = tmp;
         break;
 
@@ -515,5 +518,3 @@ Word load(Byte *memory UNUSED, Address address, Alignment alignment, int check_a
 
     return data;
 }
-
-
