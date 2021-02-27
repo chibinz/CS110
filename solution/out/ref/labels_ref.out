@@ -1,0 +1,17 @@
+.text
+00628063
+fe629ee3
+ff9ff06f
+fe629ee3
+ff1ff0ef
+fe6286e3
+
+.symbol
+0	label1
+0	label2
+8	label3
+16	label4
+
+.relocation
+8	label2
+16	label1

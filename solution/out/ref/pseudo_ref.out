@@ -1,0 +1,14 @@
+.text
+00a00513
+80000593
+32000613
+0ab00693
+feae5ae3
+feb15ae3
+00068613
+
+.symbol
+4	label1
+8	label2
+
+.relocation
