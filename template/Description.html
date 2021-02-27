@@ -1,0 +1,438 @@
+
+<!-- saved from url=(0045)http://shtech.org/course/ca/18s/projects/1.1/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+	<title>Project 1.1 - Computer Architecture I - ShanghaiTech University</title>
+	<link rel="stylesheet" type="text/css" href="./Description_files/style.css">
+  <link rel="shortcut icon" type="image/png" href="http://shtech.org/course/ca/18s/favicon.ico">
+
+	<style type="text/css">
+		table{background:#cdc;border-collapse:collapse;font-family:monospace}td{border:0.125em solid #aba;padding:0.25em}thead{background:#676;color:#fff;text-transform:uppercase}
+    td{font-size: 1.2em;}
+		span.inst{color:#d00}span.rgtr{color:#00a}span.immd{color:#a0a}span.label{color:#666}
+		div.highlight{background:#cdc;padding:1em}
+		span.warn{color:#f00;font-weight:bold;}
+		table.colonly{display:inline-block;vertical-align:top;}table.colonly td{border-top:0em;border-bottom:0em;padding-top:0.1em;padding-bottom:0.1em;}td.center{text-align:center}
+	</style>
+</head>
+<body>
+
+
+<div class="content">
+
+    <header>
+    <h2>Project 1-1: RISC-V Assembler</h2>
+    </header>
+
+    <a href="http://shtech.org/course/ca/19s/">Computer Architecture I</a> <a href="http://www.shanghaitech.edu.cn/">ShanghaiTech University</a>
+    <br>
+    Project 1.1 <a href="http://shtech.org/course/ca/19s/projects/1.2">Project 1.2</a> 
+    <p>
+  </p><div class="highlight">
+		<h3>IMPORTANT INFO - PLEASE READ</h3>
+
+		<p>The projects are part of your design project worth 2 credit points. As such they run in parallel to the actual course. So be aware that the due date for project and homework might be very close to each other! Start early and do not procrastinate.</p>
+	</div>
+
+
+	<h2>So What Is This About?</h2>
+	
+	<p>In this part of the project, we will be writing an assembler that translates a subset of the RISC-V instruction set to machine code. Our assembler is a two-pass assembler similar to the one described in lecture. However, we will only assemble the <tt>.text</tt> segment. At a high level, the functionality of our assembler can be divided as follows:</p>
+
+	<p>Pass 1: Reads the input (<tt>.s</tt>) file. Comments are stripped, pseudoinstructions are expanded, and the address of each label is recorded into the symbol table. Input validation of the labels and pseudoinstructions is performed here. The output is written to an intermediate (<tt>.int</tt>) file .</p>
+
+	<p>Pass 2: Reads the intermediate file and translates each instruction to machine code. Instruction syntax and arguments are validated at this step. The instructions and symbol table are written to an object (<tt>.out</tt>) file.</p>
+
+	<h2>The Instruction Set</h2>
+
+	<p>Please consult the <a href="http://shtech.org/course/ca/19s/notes/riscvcard.pdf">RISC-V Green Sheet</a> for register numbers, instruction opcodes, and bitwise formats. Our asembler will support all 32 registers: <b>x0</b>, <b>ra</b>, <b>sp</b>, <b>gp</b>, <b>tp</b> <b>t0-t6</b>, <b>s0 - s11</b>, <b>a0 - a7</b>. The name <b>x0</b> can be used in lieu of zero. Other register numbers (eg. x1, x2, etc.) are not supported.</p>
+
+	<p>We will have 18 instructions 5 pseudoinstructions to assemble. The instructions are:</p>
+
+<table>
+  <thead>
+    <tr>
+      <td>Instruction</td>
+      <td>Format</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+    	<td>Add</td>
+      <td><span class="inst">add</span> <span class="rgtr">rd</span>, <span class="rgtr">rs1</span>, <span class="rgtr">rs2</span></td>
+    </tr>
+    <tr>
+    	<td>Or</td>
+      <td><span class="inst">or</span> <span class="rgtr">rd</span>, <span class="rgtr">rs1</span>, <span class="rgtr">rs2</span></td>
+    </tr>
+    <tr>
+    	<td>Set Less Than</td>
+      <td><span class="inst">slt</span> <span class="rgtr">rd</span>, <span class="rgtr">rs1</span>, <span class="rgtr">rs2</span></td>
+    </tr>
+    <tr>
+    	<td>Set Less Than Unsigned</td>
+      <td><span class="inst">sltu</span> <span class="rgtr">rd</span>, <span class="rgtr">rs1</span>, <span class="rgtr">rs2</span></td>
+    </tr>
+    <!--tr>
+    	<td>Jump and Link Register</td>
+      <td><span class="inst">jalr</span> <span class="rgtr">rd</span></td>
+    </tr !-->
+    <tr>
+    	<td>Shift Left Logical</td>
+      <td><span class="inst">sll</span> <span class="rgtr">rd</span>, <span class="rgtr">rs1</span>, <span class="rgtr">rs2</span></td>
+    </tr>
+    <tr>
+    	<td>Add Immediate</td>
+      <td><span class="inst">addi</span> <span class="rgtr">rd</span>, <span class="rgtr">rs1</span>, <span class="immd">immediate</span></td>
+    </tr>
+    <tr>
+    	<td>Or Immediate</td>
+      <td><span class="inst">ori</span> <span class="rgtr">rd</span>, <span class="rgtr">rs1</span>, <span class="immd">immediate</span></td>
+    </tr>
+    <tr>
+    	<td>Load Upper Immediate</td>
+      <td><span class="inst">lui</span> <span class="rgtr">rd</span>, <span class="immd">immediate</span></td>
+    </tr>
+    <tr>
+    	<td>Load Byte</td>
+      <td><span class="inst">lb</span> <span class="rgtr">rd</span>, <span class="immd">offset</span>(<span class="rgtr">rs1</span>)</td>
+    </tr>
+    <tr>
+    	<td>Load Byte Unsigned</td>
+      <td><span class="inst">lbu</span> <span class="rgtr">rd</span>, <span class="immd">offset</span>(<span class="rgtr">rs1</span>)</td>
+    </tr>
+    <tr>
+    	<td>Load Word</td>
+      <td><span class="inst">lw</span> <span class="rgtr">rd</span>, <span class="immd">offset</span>(<span class="rgtr">rs1</span>)</td>
+    </tr>
+    <tr>
+    	<td>Store Byte</td>
+      <td><span class="inst">sb</span> <span class="rgtr">rs2</span>, <span class="immd">offset</span>(<span class="rgtr">rs1</span>)</td>
+    </tr>
+    <tr>
+    	<td>Store Word</td>
+      <td><span class="inst">sw</span> <span class="rgtr">rs2</span>, <span class="immd">offset</span>(<span class="rgtr">rs1</span>)</td>
+    </tr>
+    <tr>
+    	<td>Branch on Equal</td>
+      <td><span class="inst">beq</span> <span class="rgtr">rs1</span>, <span class="rgtr">rs2</span>, <span class="label">label</span></td>
+    </tr>
+    <tr>
+    	<td>Branch on Not Equal</td>
+      <td><span class="inst">bne</span> <span class="rgtr">rs1</span>, <span class="rgtr">rs2</span>, <span class="label">label</span></td>
+    </tr>
+    <tr>
+      <td>Branch on Less Than</td>
+      <td><span class="inst">blt</span> <span class="rgtr">rs1</span>, <span class="rgtr">rs2</span>, <span class="label">label</span></td>
+    </tr>
+    <tr>
+      <td>Branch on Greater or Equal</td>
+      <td><span class="inst">bge</span> <span class="rgtr">rs1</span>, <span class="rgtr">rs2</span>, <span class="label">label</span></td>
+    </tr>
+    <tr>
+    	<td>Jump and Link</td>
+      <td><span class="inst">jal</span> <span class="label">label</span></td>
+    </tr>
+  </tbody>
+</table>
+
+	<p>The pseudoinstructions are:</p>
+
+<table>
+  <thead>
+    <tr>
+      <td>Pseudoinstruction</td>
+      <td>Format</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+    	<td>Load Immediate</td>
+      <td><span class="inst">li</span> <span class="rgtr">rd</span>, <span class="immd">immediate</span></td>
+    </tr>
+    <tr>
+    	<td>Branch on Equal to Zero</td>
+      <td><span class="inst">beqz</span> <span class="rgtr">rs1</span>, <span class="label">label</span></td>
+    </tr>
+    <tr>
+    	<td>move</td>
+      <td><span class="inst">mv</span> <span class="rgtr">rd</span>, <span class="rgtr">rs1</span></td>
+    </tr>
+    <tr>
+      <td>Jump</td>
+      <td><span class="inst">j</span> <span class="label">label</span></td>
+    </tr>
+    <tr>
+      <td>Jump Register</td>
+      <td><span class="inst">jr</span> <span class="rgtr">rs1</span></td>
+    </tr>
+  </tbody>
+</table>
+
+  <p><i>Hint: </i>You may need to implement <code>jalr</code> before <code>jr</code>.</p>
+	
+
+
+	<h2>Implementation Steps</h2>
+
+	<h3>Step 0: Obtaining the Files</h3>
+	<p>Download <a href="http://shtech.org/course/ca/19s/projects/1.1/framework.tar" title="framework">framework</a> first. You can compile you code by typing <tt>make</tt>. At first, you will get a bunch of <tt>-Wunused-variable</tt> and <tt>-Wunused-function</tt> warnings. The warnings tell you that variables/functions were declared, but were not used in your code. Don't worry, as you complete the assigment the warnings will go away.</p>
+
+	<h3>Step 1: Building Blocks</h3>
+
+	<p>Finish the implementation of <tt>translate_reg()</tt> and <tt>translate_num()</tt> in <tt>src/translation_utils.c</tt>. <tt>translate_reg()</tt> is incomplete, so you need to fill in the rest of the register translations. You can find register numbers on the <a href="http://shtech.org/course/ca/19s/notes/riscvcard.pdf">RISC-V Green Sheet</a>. Unfortunately, there are no built-in <tt>switch</tt> statements for strings in C, so an if-else ladder is the way to compare multiple strings.</p>
+
+	<p>For <tt>translate_num()</tt>, you should use the library function <tt>strtol()</tt> (see <a href="http://www.cplusplus.com/reference/cstdlib/strtol/">documentation here</a>). <tt>translate_num()</tt> should translate a numerical string (either decimal or hexadecimal) into a signed number, and then check to make sure that the result is within the bounds specified. If the string is invalid or outside of the bounds, return -1.</p>
+
+	<h3>Step 2: SymbolTable</h3>
+
+  <p>Implement a data structure to store symbol name-to-address mappings in <tt>src/tables.c</tt>. Multiple <tt>SymbolTables</tt> may be created at the same time, and each must resize to fit an arbitrary number of entries (so you should use dynamic memory allocation). You may design the data structure in any way you like, as long as you do not change the function definitions. A SymbolTable struct has been defined in <tt>src/tables.h</tt>, and you may use the existing implementation or create your own if that feels more intuitive. Feel free to declare additional helper methods. See <tt>src/tables.c</tt> for details.</p>
+
+  <p>In <tt>add_to_table</tt>, you cannot simply store the character pointer that was given, as it could point to a temporary array. You must store a copy of that string instead. You should use the helper functions defined in <tt>src/tables.c</tt> whenever appropriate.
+
+  </p><p>You must make sure to free all memory that you allocate. See the Valgrind section under testing for more information.</p>
+
+	<h3>Step 3: Instruction Translation</h3>
+
+	<p>Implement <tt>translate_inst()</tt> in <tt>src/translate.c</tt>. The <a href="http://shtech.org/course/ca/19s/notes/riscvcard.pdf">RISC-V Green Sheet</a> will again be helpful, and so will bitwise operations.</p>
+
+	<p><tt>translate_inst()</tt> should translate instructions to hexadecimal. Note that the function is incomplete. You must first fix the funct fields, and then implement the rest of the function.You will find the <tt>translate_reg()</tt>, <tt>translate_num()</tt>, and <tt>write_inst_hex()</tt> functions, all defined in <tt>translate_utils.h</tt> helpful in this step. Some instructions may also require the symbol, which is give to you by the <tt>symtbl</tt> pointer. This step may require writing a lot of code, but the code should be similar in nature, and therefore not difficult. The more important issue is input validation -- you must make sure that all arguments given are valid. If an input is invalid, you should NOT write anything to output but return -1 instead.</p>
+
+	<p>Use your knowledge about RISC-V instruction formats and think carefully about how inputs could be invalid. You are encouraged to use <i>venus</i> as a resource. Do note that <i>venus</i> has more pseudoinstruction expansions than our assembler, which means that instructions with invalid arguments for our assembler could be treated as a pseduoinstruction by <i>venus</i>. Therefore, you should check the text section after assembling to make sure that the instruction has not been expanded by <i>venus</i> .</p>
+
+  <p><b>If a branch offset cannot fit inside the immediate field, you should treat it as an error.</b></p>
+
+	<h3>Step 4: Pseudoinstruction Expansion</h3>
+
+  <p>Implement <tt>write_pass_one()</tt> in <tt>src/translate.c</tt>, which should perform pseudoinstruction expansion on the <b>load immediate (li)</b>, <b>branch on equal to zero (beqz)</b>, <b>move (mv)</b>, <b>jump (j)</b> and <b>jump register (jr)</b> instructions. The load immediate instruction normally gets expanded into an <tt>lui-addi</tt> pair. However, an optimization can be made when the immediate is small. If the immediate can fit inside the <tt>imm</tt> field of an <tt>addi</tt> instruction, we will use an <tt>addi</tt> instruction instead. Other assemblers may implement additional optimizations, but ours will not. For the <tt>mv</tt> instruction, use the fewest number of instructions possible. Also, make sure that your pseudoinstruction expansions do not produce any unintended side effects. You will also be performing some error checking on the pseudoinstructions (see <tt>src/translate.c</tt> for details). If there is an error, do NOT write anything to the intermediate file, and return 0 to indicate that 0 lines have been written.</p>
+
+   <p><i>Caution:</i> Although <b>jump and link</b> and <b>jump and link register</b> are not pseudoinstructions themselves, the short-hand format of these two instructions are pseudoinstructions, i.e. <code>jal label</code> and <code> jalr rs1</code>. You should also expand them to the form of <code>jal rd label</code> and <code> jalr rd rs1 imm</code>. </p>
+
+  <h3>Step 5: Putting It All Together</h3>
+
+
+	<p>Implement <tt>pass_one()</tt> and <tt>pass_two()</tt> in <tt>assembler.c</tt>. In the first pass, the assembler will strip comments, add labels to the symbol table, perform pseudoinstruction expansion, and write assembly code into an intermediate file. The second pass will read the intermediate file, translate the instructions into machine code using the symbol table, and write it to an output file. Afterwards, the symbol table will be written to the output file as well, but that has been handled for you.</p><p>
+
+	</p><p><b>Before you begin, make sure you understand the documentation of <a href="http://www.cplusplus.com/reference/cstdio/fgets/">fgets()</a> and <a href="http://www.cplusplus.com/reference/cstring/strtok/">strtok()</a>.</b> It will be easier to implement <tt>pass_two()</tt> first. The comments in the function will give a more detailed outline of what to do, as well as what assumptions you may make. <b>Your program should not exit if a line contains an error.</b> Instead, keep track of whether any errors have occured, and if so, return -1 at the end. <tt>pass_one()</tt> should be structured similarly to <tt>pass_two()</tt>, except that you will also need to parse out comments and labels. You will find the <tt>skip_comment()</tt> and <tt>add_if_label()</tt> functions useful. </p>
+
+	<p>As an aside, our parser is much more lenient than an actual RISC-V parser. Building a good parser is outside the scope of this course, but we encourage you to learn about finite state automata if you are interested.</p>
+
+	<h4>Line Numbers and Byte Offsets</h4>
+
+	<p>When parsing, you will need to keep track of two numbers, the line number of the input file and the byte offset of the current instruction. Line numbers start at 1, and include whitespace. The byte offset refers to how far away the current instruction is from the first instruction, and does NOT include whitespace. You can think of the byte offset as where each instruction will be if the instructions were loaded into memory starting at address 0. See below for an example.</p>
+
+	<p>The address of a label is the byte offset of the next instruction. In the example below, <tt>L1</tt> has an address of 4 (since the next instruction is <tt>lw</tt>, whose address is 4) and <tt>L2</tt> has an address of 8 (since the next instruction is <tt>ori</tt>, whose address is 8).</p>
+
+<table class="colonly">
+  <thead>
+    <tr>
+      <td>Line #</td>
+      <td>Input File</td>
+    </tr>
+  </thead>
+	<tbody>
+		<tr>
+			<td class="center">1</td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;addi t0 a0 0</td>
+		</tr>
+		<tr>
+			<td class="center">2</td>
+			<td>L1: lw t1 0(t0)</td>
+		</tr>
+		<tr>
+			<td class="center">3</td>
+			<td># This is a comment</td>
+		</tr>
+		<tr>
+			<td class="center">4</td>
+			<td>L2:</td>
+		</tr>
+		<tr>
+			<td class="center">5</td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;ori t1 t1 0xABCD</td>
+		</tr>
+		<tr>
+			<td class="center">6</td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;addi t1 t1 3</td>
+		</tr>
+		<tr>
+			<td class="center">7</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="center">8</td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;bne t1 a2 L2</td>
+		</tr>
+	</tbody>
+</table>
+
+<div style="display:inline-block;">
+<p></p>
+</div>
+
+<table class="colonly">
+  <thead>
+    <tr>
+      <td>Output File</td>
+      <td>Byte Offset</td>
+    </tr>
+  </thead>
+	<tbody>
+		<tr>
+			<td>addi t0 a0 0</td>
+			<td class="center">0</td>
+		</tr>
+		<tr>
+			<td>lw t1 0(t0)</td>
+			<td class="center">4</td>
+		</tr>
+		<tr>
+			<td>ori t1 t1 0xABCD</td>
+			<td class="center">8</td>
+		</tr>
+		<tr>
+			<td>addiu t1 t1 3</td>
+			<td class="center">12</td>
+		</tr>
+		<tr>
+			<td>bne t1 a2 label_2</td>
+			<td class="center">16</td>
+		</tr>
+	</tbody>
+</table>
+
+	<h4>Error Handling</h4>
+
+  <p> If an input file contains an error, we only require that your program print the correct error messages. The contents of your <tt>.int</tt> and <tt>.out</tt> files do not matter.</p>
+
+	<p>There are two kinds of errors you can get: errors with instructions and errors with labels. Error checking of labels is done for you by <tt>add_if_label()</tt>. However, you will still need to record that an error has occurred so that <tt>pass_one()</tt> can return -1.</p>
+
+	<p>In <tt>pass_one()</tt>, errors with instructions can be raised by 1) <tt>write_pass_one()</tt> or 2) the instruction having too many arguments. In <tt>pass_two()</tt>, errors with instructions will only be raised by <tt>translate_inst()</tt>. Both <tt>write_pass_one()</tt> and <tt>translate_inst()</tt> should return a special value (0 and -1 respectively) in the event of an error. You will need to detect whether an instuction has too many arguments yourself in <tt>pass_one()</tt>.</p> 
+
+	<p>Whenever an error is encountered in either <tt>pass_one()</tt> or <tt>pass_two()</tt>, record that there is an error and move on. Do not exit the function prematurely. When the function exits, return -1.</p>
+
+  <p>For information about testing error message, please see the "Error Message Testing" section under "Running the Assembler".</p>
+
+	<h3>Step 6: Testing</h3>
+
+	<p>You are responsible for testing your code. While we have provided a few test cases, they are by no means comprehensive. Fortunately, you have a variety of testing tools at your service.</p>
+
+	<h4>Valgrind</h4>
+
+	<p>You should use Valgrind to check whether your code has any memory leaks. We have included a file, <tt>run-valgrind</tt>, which will run Valgrind on any executable of your choosing. If you get a permission denied error, try changing adding the execute permission to the file:</p>
+
+	<pre>chmod u+x run-valgrind</pre>
+
+	<p>Then you can run by typing:</p>
+
+	<pre>./run-valgrind &lt;whatever program you want to run&gt;</pre>
+
+	<p>For example, you wanted to see whether running <tt>./assembler -p1 input/simple.s out/simple.int</tt> would cause any memory leaks, you should run <tt>./run-valgrind ./assembler -p1 input/simple.s out/simple.int</tt>.
+
+	</p><h4><i>venus</i></h4>
+
+	<p>Since you're writing an assembler, why not refer to an existing assembler? <i>venus</i> is a powerful reference for you to use, and you are encouraged to write your own RISC-V files and assemble them using <i>venus</i>. </p>
+
+	<p><b>Warning: in some cases the output of <i>venus</i> will differ from the specifications of this project. You should always follow the specs.</b> This is because <i>venus</i> 1) supports more pseudoinstructions, 2) has slightly different pseudoinstruction expansion rules, and 3) acts as an assembler and linker. You should always examine the assembled instructions carefully when testing with <i>venus</i>.</p>
+
+
+
+	<h4>Diff</h4>
+
+	<p><tt>diff</tt> is a utility for comparing the contents of files. Running the following command will print out the differences between <tt>file1</tt> and <tt>file2</tt>:</p>
+
+	<pre>diff &lt;file1&gt; &lt;file2&gt;</pre>
+
+	<p>To see how to interpret diff results, <a href="http://en.wikipedia.org/wiki/Diff_utility#Usage">click here</a>. We have provided some sample input-output pairs (again, these are not comprehensive tests) located in the <tt>input</tt> and <tt>out/ref</tt> directories respectively. For example, to check the output of running <tt>simple.s</tt> on your assembler against the expected output, run:</p>
+
+	<pre>./assembler input/simple.s out/simple.int out/simple.out 
+diff out/simple.out out/ref/simple_ref.out</pre>
+
+	<h2>Running the Assembler</h2>
+
+	<p>First, make sure your assembler executable is up to date by running <tt>make</tt>.</p>
+
+	<p>By default, the assembler runs two passes. The first pass reads an input file and translates it into an intermediate file. The second pass reads the intermediate file and translates it into an output file. To run both passes, type:</p>
+
+	<pre>./assembler &lt;input file&gt; &lt;intermediate file&gt; &lt;output file&gt;</pre>
+
+	<p>Alternatively, you can run only a single pass, which may be helpful while debugging. To run only the first pass, use the <tt>-p1</tt> flag:</p>
+
+	<pre>./assembler &lt;-p1&gt; &lt;input file&gt; &lt;intermediate file&gt;</pre>
+
+	<p>To run only the second pass, use the <tt>-p2</tt> flag. Note that when running pass two only, your symbol table will be empty since labels were stripped in pass_one(), so it may affect your branch instructions.</p>
+
+	<pre>./assembler &lt;-p2&gt; &lt;intermediate file&gt; &lt;output file&gt;</pre>
+
+	<p>When testing cases that should produce error messages, you may want to use the <tt>-log</tt> flag to log error messages to a text file. The <tt>-log</tt> flag should be followed with the location of the output file (WARNING: old contents will be overwritten!), and it can be used with any of the three modes above.</p>
+
+  <h4>Error Message Testing</h4>
+
+  <p>We have provided two tests for error messages, one for errors that should be raised during <tt>pass_one()</tt>, and one for errors that should be raised during <tt>pass_two()</tt>. To test for <tt>pass_one()</tt> errors, assemble <tt>input/p1_errors.s</tt> with the <tt>-p1</tt> flag and verify that your output matches the expected output:</p>
+
+  <pre>./assembler -p1 input/p1_errors.s out/p1_errors.int -log log/p1_errors.txt
+diff log/p1_errors.txt log/ref/p1_errors_ref.txt</pre>
+
+  <p>To test for <tt>pass_two()</tt> errors, assemble <tt>input/p2_errors.s</tt> running both passes:</p>
+
+  <pre>./assembler input/p2_errors.s out/p2_errors.int out/p2_errors.out -log log/p2_errors.txt
+diff log/p2_errors.txt log/ref/p2_errors_ref.txt</pre>
+  
+  <p>Your intermediate and output files (<tt>.int</tt> and <tt>.out</tt> files) do NOT need to match the reference output if the input file contains an error.</p>
+
+
+  <h2>Notes regarding grading</h2>
+  <ul>
+    <li>The Autolab will enforce a proper amount of comments again!</li>
+    <li>Make sure you add proper comments - about one every four lines of code that you ADD. We will check this by hand.</li>
+    <li>The Autolab will again use <tt>-Wpedantic -Wall -Wextra -Werror -std=c89</tt>. You may edit the Makefile if you need to - but the Autolab will replace the CFLAGS line. Your compilation step will have to use the CFLAGS!</li>
+  </ul>
+
+  <h2>How much will I need to write</h2>
+  <p> Here is a summary of the solution code. The final row gives total lines inserted and deleted; a changed line counts as both an insertion and a deletion. However, there are many possible solutions and many of them may differ. 
+    <pre><code>
+      assembler.c               | 138 ++++++++++++++++++-----------
+      src/tables.c              |  69 ++++++++++++++-
+      src/translate.c           | 262 +++++++++++++++++++++++++++++++++++++++++++++-----------
+      src/translate_utils.c     |  64 ++++++++++++--
+      4 files changed, 416 insertions(+), 117 deletions(-)
+  </code></pre>
+
+  <h2> Submission </h2>
+    <p>You should submit an archive file names as framework.tar to Autolab. The archive must contain a folder named framework.</p>
+    <p>The directory tree of your submission should like the following:</p>
+    <pre><code>
+    |--- src
+    |     |-- tables.c     
+    |     |-- tables.h
+    |     |-- translate.c
+    |     |-- translate.h
+    |     |-- translate_utils.c
+    |     |-- translate_utils.h
+    |     |-- utils.c
+    |     |-- utils.h
+    |--- assembler.c
+    |--- assembler.h
+    |--- Makefile
+    |--- run-valgrind
+    </code></pre>
+  <h2>Autolab Results</h2>
+    <p> tests 1-x stands for results for testcase x.</p>
+    <p> test 2-0 stands for the result for memory leak detection. </p>
+  
+	
+<footer>
+<hr style="clear: both;">
+<div style="float:left">
+<address>
+Schwertfeger, Sören &lt;<code>soerensch</code> AT <code>shanghaitech.edu.cn</code>&gt;
+Zhijie Yang &lt;<code>yangzhj</code> AT <code>shanghaitech.edu.cn</code>&gt;
+</address>
+Based on UC Berkely CS61C and modified for RISC-V by Zhijie Yang<br>
+Last modified: <time datetime="2019-03-15">2019-03-15</time>
+</div>
+
+</footer>
+
+
+</div>
+</body></html>
