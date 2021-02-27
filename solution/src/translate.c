@@ -8,7 +8,7 @@
 
 /* Writes instructions during the assembler's first pass to OUTPUT. The case
    for general instructions has already been completed, but you need to write
-   code to translate the li, bge and move pseudoinstructions. Your pseudoinstruction 
+   code to translate the li, bge and move pseudoinstructions. Your pseudoinstruction
    expansions should not have any side effects.
 
    NAME is the name of the instruction, ARGS is an array of the arguments, and
@@ -16,14 +16,14 @@
 
    Error checking for regular instructions are done in pass two. However, for
    pseudoinstructions, you must make sure that ARGS contains the correct number
-   of arguments. You do NOT need to check whether the registers / label are 
+   of arguments. You do NOT need to check whether the registers / label are
    valid, since that will be checked in part two.
 
    Also for li:
-    - make sure that the number is representable by 32 bits. (Hint: the number 
+    - make sure that the number is representable by 32 bits. (Hint: the number
         can be both signed or unsigned).
     - if the immediate can fit in the imm field of an addiu instruction, then
-        expand li into a single addiu instruction. Otherwise, expand it into 
+        expand li into a single addiu instruction. Otherwise, expand it into
         a lui-ori pair.
 
    And for bge and move:
@@ -33,7 +33,7 @@
    larger than the largest 32 bit number to be loaded with li. You should follow
    the above rules if MARS behaves differently.
 
-   Use fprintf() to write. If writing multiple instructions, make sure that 
+   Use fprintf() to write. If writing multiple instructions, make sure that
    each instruction is on a different line.
 
    Returns the number of instructions written (so 0 if there were any errors).
@@ -48,13 +48,13 @@ unsigned write_pass_one(FILE* output, const char* name, char** args, int num_arg
   if (!output || !name || !args)
     return 0;
   if (strcmp(name, "li") == 0) {
-    /* YOUR CODE HERE */  
+    /* YOUR CODE HERE */
     if (num_args != 2)
     {
       return 0;
     }
     /* YOUR CODE HERE */
-    returncode = translate_num(&num, args[1], INT32_MAX, INT32_MIN);/*translate the number*/
+    returncode = translate_num(&num, args[1], INT32_MIN, INT32_MAX);/*translate the number*/
     if (returncode == -1 || translate_reg(args[0]) == -1)/*number in unsigned int 32*/
       return 0;
     if (num >= -2048 && num <= 2047)
@@ -75,7 +75,7 @@ unsigned write_pass_one(FILE* output, const char* name, char** args, int num_arg
       fprintf(output, "addi %s %s %ld\n", args[0], args[0], lower);
       return 2;
     }
-    
+
   } else if (strcmp(name, "beqz") == 0) {
     /* YOUR CODE HERE */
     if (num_args == 2)
@@ -129,24 +129,24 @@ unsigned write_pass_one(FILE* output, const char* name, char** args, int num_arg
 }
 
 /* Writes the instruction in hexadecimal format to OUTPUT during pass #2.
-   
+
    NAME is the name of the instruction, ARGS is an array of the arguments, and
-   NUM_ARGS specifies the number of items in ARGS. 
+   NUM_ARGS specifies the number of items in ARGS.
 
    The symbol table (SYMTBL) is given for any symbols that need to be resolved
    at this step. If a symbol should be relocated, it should be added to the
    relocation table (RELTBL), and the fields for that symbol should be set to
-   all zeros. 
+   all zeros.
 
    You must perform error checking on all instructions and make sure that their
-   arguments are valid. If an instruction is invalid, you should not write 
+   arguments are valid. If an instruction is invalid, you should not write
    anything to OUTPUT but simply return -1. MARS may be a useful resource for
    this step.
 
    Note the use of helper functions. Consider writing your own! If the function
    definition comes afterwards, you must declare it first (see translate.h).
 
-   Returns 0 on success and -1 on error. 
+   Returns 0 on success and -1 on error.
  */
 int translate_inst(FILE* output, const char* name, char** args, size_t num_args, uint32_t addr, SymbolTable* symtbl, SymbolTable* reltbl) {
     if (strcmp(name, "add") == 0)       return write_rtype (0x33, 0x00, 0x00, output, args, num_args);
@@ -173,7 +173,7 @@ int translate_inst(FILE* output, const char* name, char** args, size_t num_args,
 }
 
 /* A helper function for writing most R-type instructions. You should use
-   translate_reg() to parse registers and write_inst_hex() to write to 
+   translate_reg() to parse registers and write_inst_hex() to write to
    OUTPUT. Both are defined in translate_utils.h.
 
    This function is INCOMPLETE. Complete the implementation below. You will
@@ -222,12 +222,12 @@ int write_itype(uint8_t opcode, uint8_t funct3, FILE* output, char** args, size_
   if (opcode == 0x03)
   {
     rs1 = translate_reg (args[2]);
-    error = translate_num (&immediate, args[1], 2047, -2048);
+    error = translate_num (&immediate, args[1], -2048, 2047);
   }else
   {
     rs1 = translate_reg (args[1]);
     /* The immediate is only 12 bits long. */
-    error = translate_num (&immediate, args[2], 2047, -2048);
+    error = translate_num (&immediate, args[2], -2048, 2047);
   }
   /*printf ("rs1: %d, error: %d\n", rs1, error);*/
   if (rs1 < 0 || rs1 > 31 || error < 0) return -1;
@@ -250,7 +250,7 @@ int write_stype(uint8_t opcode, uint8_t funct3, FILE* output, char** args, size_
 
   rs1 = translate_reg (args[2]);
   rs2 = translate_reg (args[0]);
-  error = translate_num (&immediate, args[1], 2047, -2048);
+  error = translate_num (&immediate, args[1], -2048, 2047);
 
   if (rs1 < 0 || rs2 < 0 || error < 0 || rs1 > 31 || rs2 > 31)    return -1;    /*If translate_reg or translate_num fails, return -1*/
   immediate = immediate & 0xffff;                                         /*Make sure immediate is 16 bits long*/
@@ -266,17 +266,17 @@ int write_stype(uint8_t opcode, uint8_t funct3, FILE* output, char** args, size_
   instruction = instruction | (imm11_5 << 25);                             /* Shifts 25 bits for immediate[11:5] */
   write_inst_hex(output, instruction);
   return 0;
-  
+
   /*return -1;*/
 }
 
 /* Hint: the way for branch to calculate relative address. e.g. bne
      bne rs1 rs2 label
-   assume the byte_offset(addr) of label is L, 
+   assume the byte_offset(addr) of label is L,
    current instruction byte_offset(addr) is A
    the relative address I  for label satisfy:
      L = (A + 4) + I * 4
-   so the relative addres is 
+   so the relative addres is
      I = (L - A - 4) / 4;  */
 int write_sbtype(uint8_t opcode, uint8_t funct3, FILE* output, char** args, size_t num_args,
     uint32_t addr, SymbolTable* symtbl) {
@@ -323,7 +323,7 @@ int write_utype(uint8_t opcode, FILE* output, char** args, size_t num_args) {
   /*Declares before expressions*/
   if (num_args != 2)  return -1;                                          /*Returns -1 if too much or too few args*/
   rd = translate_reg(args[0]);                                            /*Translates rt from args[1]*/
-  error = translate_num(&immediate, args[1], 1 << 20, 0);                /*Translates immediate from args[2] and determines it bounds*/
+  error = translate_num(&immediate, args[1], 0, 1 << 20);                /*Translates immediate from args[2] and determines it bounds*/
   if (rd < 0 || error < 0 || rd > 31)    return -1;                         /*If translate_reg or translate_num fails, return -1*/
   immediate = immediate & 0xfffff;                                         /*Make sure immediate is 20 bits long*/
 
@@ -338,7 +338,7 @@ int write_utype(uint8_t opcode, FILE* output, char** args, size_t num_args) {
 /* Hint: the relocation table should record
    1. the current instruction byte_offset(addr)
    2. the unsolved LABEL in the jump instruction  */
-int write_ujtype(uint8_t opcode, FILE* output, char** args, size_t num_args, 
+int write_ujtype(uint8_t opcode, FILE* output, char** args, size_t num_args,
     uint32_t addr, SymbolTable* reltbl, SymbolTable* symtbl) {
   /* YOUR CODE HERE */
   int32_t error = 0, rd, imm20 = 0, imm10_1 = 0, imm11 = 0, imm19_12 = 0, L, I;

@@ -5,10 +5,10 @@
  * Do Not Modify Code Below
  *******************************/
 
-int assemble(const char* in_name, const char* tmp_name, const char* out_name);
+int assemble(const char* out, const char* in, const char* tmp);
 
-int pass_one(FILE *input, FILE* output, SymbolTable* symtbl);
+int pass_one(FILE *output, FILE* input, SymbolTable* symtbl);
 
-int pass_two(FILE *input, FILE* output, SymbolTable* symtbl, SymbolTable* reltbl);
+int pass_two(FILE *output, FILE* input, SymbolTable* symtbl, SymbolTable* reltbl);
 
 #endif

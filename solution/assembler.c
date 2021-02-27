@@ -33,15 +33,15 @@ static void raise_extra_argument_error(uint32_t input_line, const char* extra_ar
     write_to_log("Error - extra argument at line %d: %s\n", input_line, extra_arg);
 }
 
-/* You should call this function if write_pass_one() or translate_inst() 
-   returns -1. 
- 
+/* You should call this function if write_pass_one() or translate_inst()
+   returns -1.
+
    INPUT_LINE is which line of the input file that the error occurred in. Note
    that the first line is line 1 and that empty lines are included in the count.
  */
 static void raise_instruction_error(uint32_t input_line, const char* name, char** args,
     int num_args) {
-    
+
     write_to_log("Error - invalid instruction at line %d: ", input_line);
     log_inst(name, args, num_args);
 }
@@ -60,7 +60,7 @@ static void skip_comments(char* str) {
    INPUT_LINE is which line of the input file we are currently processing. Note
    that the first line is line 1 and that empty lines are included in this count.
 
-   BYTE_OFFSET is the offset of the NEXT instruction (should it exist). 
+   BYTE_OFFSET is the offset of the NEXT instruction (should it exist).
 
    Four scenarios can happen:
     1. STR is not a label (does not end in ':'). Returns 0.
@@ -72,7 +72,7 @@ static void skip_comments(char* str) {
  */
 static int add_if_label(uint32_t input_line, char* str, uint32_t byte_offset,
     SymbolTable* symtbl) {
-    
+
     size_t len = strlen(str);
     if (str[len - 1] == ':') {
         str[len - 1] = '\0';
@@ -107,24 +107,24 @@ static int add_if_label(uint32_t input_line, char* str, uint32_t byte_offset,
     2. If the first token is not a label, treat it as the name of an instruction.
     3. Everything after the instruction name should be treated as arguments to
         that instruction. If there are more than MAX_ARGS arguments, call
-        raise_extra_argument_error() and pass in the first extra argument. Do not 
+        raise_extra_argument_error() and pass in the first extra argument. Do not
         write that instruction to the output file (eg. don't call write_pass_one())
-    4. Only one instruction should be present per line. You do not need to do 
-        anything extra to detect this - it should be handled by guideline 3. 
+    4. Only one instruction should be present per line. You do not need to do
+        anything extra to detect this - it should be handled by guideline 3.
     5. A line containing only a label is valid. The address of the label should
         be the byte offset of the next instruction, regardless of whether there
         is a next instruction or not.
 
    Just like in pass_two(), if the function encounters an error it should NOT
-   exit, but process the entire file and return -1. If no errors were encountered, 
+   exit, but process the entire file and return -1. If no errors were encountered,
    it should return 0.
  */
-int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
+int pass_one(FILE* output, FILE* input, SymbolTable* symtbl) {
   /* YOUR CODE HERE */
-  
+
   /* a buffer for line parse */
   char buf[BUF_SIZE];
-  
+
   char *args[3], name[20], *next;                                     /*Declares the chars*/
   int error = 0, label = 0, i = 0, pass = 0, result = 0, flag = 0;              /*Declares the ints*/
   int lineCount = 0;                                                  /*Declares the unsigned ints*/
@@ -191,14 +191,14 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
     5. The symbol table has been filled out already
    If an error is reached, DO NOT EXIT the function. Keep translating the rest of
    the document, and at the end, return -1. Return 0 if no errors were encountered. */
-int pass_two(FILE *input, FILE* output, SymbolTable* symtbl, SymbolTable* reltbl) {
+int pass_two(FILE *output, FILE* input, SymbolTable* symtbl, SymbolTable* reltbl) {
     /* YOUR CODE HERE */
 
-    /* Since we pass this buffer to strtok(), 
+    /* Since we pass this buffer to strtok(),
        the chars here will GET CLOBBERED.  */
     char buf[BUF_SIZE];
 
-    /* Store input line number / byte offset below. 
+    /* Store input line number / byte offset below.
        When should each be incremented?  */
 
 
@@ -239,9 +239,9 @@ int pass_two(FILE *input, FILE* output, SymbolTable* symtbl, SymbolTable* reltbl
  * Do Not Modify Code Below
  *******************************/
 
-static int open_files(FILE** input, FILE** output, const char* input_name, 
+static int open_files(FILE** input, FILE** output, const char* input_name,
     const char* output_name) {
-    
+
     *input = fopen(input_name, "r");
     if (!*input) {
         write_to_log("Error: unable to open input file: %s\n", input_name);
@@ -264,39 +264,39 @@ static void close_files(FILE* input, FILE* output) {
 /* Runs the two-pass assembler. Most of the actual work is done in pass_one()
    and pass_two().
  */
-int assemble(const char* in_name, const char* tmp_name, const char* out_name) {
+int assemble(const char* out, const char* in, const char* tmp) {
     FILE *src, *dst;
     int err = 0;
     SymbolTable* symtbl = create_table(SYMBOLTBL_UNIQUE_NAME);
     SymbolTable* reltbl = create_table(SYMBOLTBL_NON_UNIQUE);
 
-    if (in_name) {
-        printf("Running pass one: %s -> %s\n", in_name, tmp_name);
-        if (open_files(&src, &dst, in_name, tmp_name) != 0) {
+    if (in) {
+        printf("Running pass one: %s -> %s\n", in, tmp);
+        if (open_files(&src, &dst, in, tmp) != 0) {
             free_table(symtbl);
             free_table(reltbl);
             exit(1);
         }
 
-        if (pass_one(src, dst, symtbl) != 0) {
+        if (pass_one(dst, src, symtbl) != 0) {
             err = 1;
         }
         close_files(src, dst);
     }
 
-    if (out_name) {
-        printf("Running pass two: %s -> %s\n", tmp_name, out_name);
-        if (open_files(&src, &dst, tmp_name, out_name) != 0) {
+    if (out) {
+        printf("Running pass two: %s -> %s\n", tmp, out);
+        if (open_files(&src, &dst, tmp, out) != 0) {
             free_table(symtbl);
             free_table(reltbl);
             exit(1);
         }
 
         fprintf(dst, ".text\n");
-        if (pass_two(src, dst, symtbl, reltbl) != 0) {
+        if (pass_two(dst, src, symtbl, reltbl) != 0) {
             err = 1;
         }
-        
+
         fprintf(dst, "\n.symbol\n");
         write_table(symtbl, dst);
 
@@ -305,7 +305,7 @@ int assemble(const char* in_name, const char* tmp_name, const char* out_name) {
 
         close_files(src, dst);
     }
-    
+
     free_table(symtbl);
     free_table(reltbl);
     return err;
@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    int err = assemble(input, inter, output);
+    int err = assemble(output, input, inter);
 
     if (err) {
         write_to_log("One or more errors encountered during assembly operation.\n");
