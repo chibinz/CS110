@@ -1,19 +1,17 @@
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <unistd.h>
 
 /*******************************
- * Do Not Modify Code Below 
+ * Do Not Modify Code Below
  *******************************/
 
-static const char* output_file = NULL;
+static const char *output_file = NULL;
 
-int is_log_file_set() {
-    return output_file != NULL;
-}
+int is_log_file_set() { return output_file != NULL; }
 
-void set_log_file(const char* filename) {
+void set_log_file(const char *filename) {
     if (filename) {
         output_file = filename;
         unlink(filename);
@@ -22,15 +20,15 @@ void set_log_file(const char* filename) {
     }
 }
 
-void write_to_log(char* fmt, ...) {
+void write_to_log(char *fmt, ...) {
     va_list args;
 
     if (output_file) {
-        FILE* f = fopen(output_file, "a");
+        FILE *f = fopen(output_file, "a");
         if (!f) {
             return;
         }
-        
+
         va_start(args, fmt);
         vfprintf(f, fmt, args);
         va_end(args);
@@ -42,15 +40,15 @@ void write_to_log(char* fmt, ...) {
     }
 }
 
-void log_inst(const char* name, char** args, int num_args) {
+void log_inst(const char *name, char **args, int num_args) {
     int i;
 
     if (output_file) {
-        FILE* f = fopen(output_file, "a");
+        FILE *f = fopen(output_file, "a");
         if (!f) {
             return;
         }
-        
+
         fprintf(f, "%s", name);
         for (i = 0; i < num_args; i++) {
             fprintf(f, " %s", args[i]);
