@@ -11,10 +11,9 @@ do
 	if [ -e ../log/ref/${name}_ref.txt ]
 	then
 		# INCORRECT
-		diff ../log/ref/${name}_ref.txt ../log/$name.txt
+		diff -Z ../log/ref/${name}_ref.txt ../log/$name.txt
 	else
-		diff ../out/ref/${name}_ref.int ../out/$name.int
-		diff ../out/ref/${name}_ref.out ../out/$name.out
+		diff -Z ../out/ref/${name}_ref.int ../out/$name.int
+		diff -Z ../out/ref/${name}_ref.out ../out/$name.out
 	fi
 done
-
