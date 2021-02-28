@@ -60,8 +60,8 @@ int is_valid_label(const char* str) {
    function returns 0 if the conversion proceeded without errors, or -1 if an
    error occurred.
  */
-int translate_num(long int* output, const char* str, long int upper_bound,
-    long int lower_bound) {
+int translate_num(long int* output, const char* str, long int lower_bound,
+    long int upper_bound) {
 
     /* YOUR CODE HERE */
     char* end_ptr;

@@ -433,7 +433,7 @@ int write_utype(uint8_t opcode, FILE* output, char** args, size_t num_args) {
     /** destination register */
     rd = translate_reg(args[0]);
     /** immediate */
-    imm_ok = translate_num(&imm, args[1], _UINT20_MAX_, 0);
+    imm_ok = translate_num(&imm, args[1], 0, _UINT20_MAX_);
 
     /** check validation of rd and imm */
     if (rd == -1 || imm_ok == -1) {

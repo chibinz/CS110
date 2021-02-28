@@ -56,8 +56,8 @@ int is_valid_label(const char* str);
 
 
 /* IMPLEMENT ME - see documentation in translate_utils.c */
-int translate_num(long int* output, const char* str, long int upper_bound,
-	long int lower_bound);
+int translate_num(long int* output, const char* str, long int lower_bound,
+	long int upper_bound);
 
 /* Note that the following function convert string to signed int
    thus, you may not use it in instructions which operate on unsigned operand

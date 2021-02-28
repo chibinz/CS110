@@ -120,7 +120,7 @@ static int add_if_label(uint32_t input_line, char* str, uint32_t byte_offset,
    exit, but process the entire file and return -1. If no errors were encountered,
    it should return 0.
  */
-int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
+int pass_one(FILE* output, FILE* input, SymbolTable* symtbl) {
     /* YOUR CODE HERE */
 
     /* Counter of errors */
@@ -240,7 +240,7 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
     5. The symbol table has been filled out already
    If an error is reached, DO NOT EXIT the function. Keep translating the rest of
    the document, and at the end, return -1. Return 0 if no errors were encountered. */
-int pass_two(FILE *input, FILE* output, SymbolTable* symtbl) {
+int pass_two(FILE *output, FILE* input, SymbolTable* symtbl) {
     /* YOUR CODE HERE */
 
     /* Counter of errors */
@@ -342,33 +342,33 @@ static void close_files(FILE* input, FILE* output) {
 /* Runs the two-pass assembler. Most of the actual work is done in pass_one()
    and pass_two().
  */
-int assemble(const char* in_name, const char* tmp_name, const char* out_name) {
+int assemble(const char *out, const char *in, const char *tmp) {
     FILE *src, *dst;
     int err = 0;
-    SymbolTable* symtbl = create_table(SYMBOLTBL_UNIQUE_NAME);
+    SymbolTable *symtbl = create_table(SYMBOLTBL_UNIQUE_NAME);
 
-    if (in_name) {
-        printf("Running pass one: %s -> %s\n", in_name, tmp_name);
-        if (open_files(&src, &dst, in_name, tmp_name) != 0) {
+    if (in) {
+        printf("Running pass one: %s -> %s\n", in, tmp);
+        if (open_files(&src, &dst, in, tmp) != 0) {
             free_table(symtbl);
             exit(1);
         }
 
-        if (pass_one(src, dst, symtbl) != 0) {
+        if (pass_one(dst, src, symtbl) != 0) {
             err = 1;
         }
         close_files(src, dst);
     }
 
-    if (out_name) {
-        printf("Running pass two: %s -> %s\n", tmp_name, out_name);
-        if (open_files(&src, &dst, tmp_name, out_name) != 0) {
+    if (out) {
+        printf("Running pass two: %s -> %s\n", tmp, out);
+        if (open_files(&src, &dst, tmp, out) != 0) {
             free_table(symtbl);
             exit(1);
         }
 
         fprintf(dst, ".text\n");
-        if (pass_two(src, dst, symtbl) != 0) {
+        if (pass_two(dst, src, symtbl) != 0) {
             err = 1;
         }
 
@@ -428,7 +428,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    err = assemble(input, inter, output);
+    err = assemble(output, input, inter);
 
     if (err) {
         write_to_log("One or more errors encountered during assembly operation.\n");
