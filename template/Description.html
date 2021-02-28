@@ -25,7 +25,7 @@
 
     <a href="http://shtech.org/course/ca/19s/">Computer Architecture I</a> <a href="http://www.shanghaitech.edu.cn/">ShanghaiTech University</a>
     <br>
-    Project 1.1 <a href="http://shtech.org/course/ca/19s/projects/1.2">Project 1.2</a> 
+    Project 1.1 <a href="http://shtech.org/course/ca/19s/projects/1.2">Project 1.2</a>
     <p>
   </p><div class="highlight">
 		<h3>IMPORTANT INFO - PLEASE READ</h3>
@@ -35,7 +35,7 @@
 
 
 	<h2>So What Is This About?</h2>
-	
+
 	<p>In this part of the project, we will be writing an assembler that translates a subset of the RISC-V instruction set to machine code. Our assembler is a two-pass assembler similar to the one described in lecture. However, we will only assemble the <tt>.text</tt> segment. At a high level, the functionality of our assembler can be divided as follows:</p>
 
 	<p>Pass 1: Reads the input (<tt>.s</tt>) file. Comments are stripped, pseudoinstructions are expanded, and the address of each label is recorded into the symbol table. Input validation of the labels and pseudoinstructions is performed here. The output is written to an intermediate (<tt>.int</tt>) file .</p>
@@ -169,7 +169,7 @@
 </table>
 
   <p><i>Hint: </i>You may need to implement <code>jalr</code> before <code>jr</code>.</p>
-	
+
 
 
 	<h2>Implementation Steps</h2>
@@ -204,6 +204,8 @@
 	<h3>Step 4: Pseudoinstruction Expansion</h3>
 
   <p>Implement <tt>write_pass_one()</tt> in <tt>src/translate.c</tt>, which should perform pseudoinstruction expansion on the <b>load immediate (li)</b>, <b>branch on equal to zero (beqz)</b>, <b>move (mv)</b>, <b>jump (j)</b> and <b>jump register (jr)</b> instructions. The load immediate instruction normally gets expanded into an <tt>lui-addi</tt> pair. However, an optimization can be made when the immediate is small. If the immediate can fit inside the <tt>imm</tt> field of an <tt>addi</tt> instruction, we will use an <tt>addi</tt> instruction instead. Other assemblers may implement additional optimizations, but ours will not. For the <tt>mv</tt> instruction, use the fewest number of instructions possible. Also, make sure that your pseudoinstruction expansions do not produce any unintended side effects. You will also be performing some error checking on the pseudoinstructions (see <tt>src/translate.c</tt> for details). If there is an error, do NOT write anything to the intermediate file, and return 0 to indicate that 0 lines have been written.</p>
+
+  <p>If an <tt>li</tt> instruction got expanded into 2 instructions (<tt>lui-addi</tt>), print the first immediate using format specifier "%u", the second immediate using "%d". In any other cases, preserve the original format of the immediate.</p>
 
    <p><i>Caution:</i> Although <b>jump and link</b> and <b>jump and link register</b> are not pseudoinstructions themselves, the short-hand format of these two instructions are pseudoinstructions, i.e. <code>jal label</code> and <code> jalr rs1</code>. You should also expand them to the form of <code>jal rd label</code> and <code> jalr rd rs1 imm</code>. </p>
 
@@ -306,9 +308,11 @@
 
 	<p>There are two kinds of errors you can get: errors with instructions and errors with labels. Error checking of labels is done for you by <tt>add_if_label()</tt>. However, you will still need to record that an error has occurred so that <tt>pass_one()</tt> can return -1.</p>
 
-	<p>In <tt>pass_one()</tt>, errors with instructions can be raised by 1) <tt>write_pass_one()</tt> or 2) the instruction having too many arguments. In <tt>pass_two()</tt>, errors with instructions will only be raised by <tt>translate_inst()</tt>. Both <tt>write_pass_one()</tt> and <tt>translate_inst()</tt> should return a special value (0 and -1 respectively) in the event of an error. You will need to detect whether an instuction has too many arguments yourself in <tt>pass_one()</tt>.</p> 
+	<p>In <tt>pass_one()</tt>, errors with instructions can be raised by 1) <tt>write_pass_one()</tt> or 2) the instruction having too many arguments. In <tt>pass_two()</tt>, errors with instructions will only be raised by <tt>translate_inst()</tt>. Both <tt>write_pass_one()</tt> and <tt>translate_inst()</tt> should return a special value (0 and -1 respectively) in the event of an error. You will need to detect whether an instuction has too many arguments yourself in <tt>pass_one()</tt>.</p>
 
 	<p>Whenever an error is encountered in either <tt>pass_one()</tt> or <tt>pass_two()</tt>, record that there is an error and move on. Do not exit the function prematurely. When the function exits, return -1.</p>
+
+  <p>For pass_one, the line number in the error message corresponds to the input file. For pass_two, the line number in the error message corresponds to the intermediate file.</p>
 
   <p>For information about testing error message, please see the "Error Message Testing" section under "Running the Assembler".</p>
 
@@ -344,7 +348,7 @@
 
 	<p>To see how to interpret diff results, <a href="http://en.wikipedia.org/wiki/Diff_utility#Usage">click here</a>. We have provided some sample input-output pairs (again, these are not comprehensive tests) located in the <tt>input</tt> and <tt>out/ref</tt> directories respectively. For example, to check the output of running <tt>simple.s</tt> on your assembler against the expected output, run:</p>
 
-	<pre>./assembler input/simple.s out/simple.int out/simple.out 
+	<pre>./assembler input/simple.s out/simple.int out/simple.out
 diff out/simple.out out/ref/simple_ref.out</pre>
 
 	<h2>Running the Assembler</h2>
@@ -376,7 +380,7 @@ diff log/p1_errors.txt log/ref/p1_errors_ref.txt</pre>
 
   <pre>./assembler input/p2_errors.s out/p2_errors.int out/p2_errors.out -log log/p2_errors.txt
 diff log/p2_errors.txt log/ref/p2_errors_ref.txt</pre>
-  
+
   <p>Your intermediate and output files (<tt>.int</tt> and <tt>.out</tt> files) do NOT need to match the reference output if the input file contains an error.</p>
 
 
@@ -388,7 +392,7 @@ diff log/p2_errors.txt log/ref/p2_errors_ref.txt</pre>
   </ul>
 
   <h2>How much will I need to write</h2>
-  <p> Here is a summary of the solution code. The final row gives total lines inserted and deleted; a changed line counts as both an insertion and a deletion. However, there are many possible solutions and many of them may differ. 
+  <p> Here is a summary of the solution code. The final row gives total lines inserted and deleted; a changed line counts as both an insertion and a deletion. However, there are many possible solutions and many of them may differ.
     <pre><code>
       assembler.c               | 138 ++++++++++++++++++-----------
       src/tables.c              |  69 ++++++++++++++-
@@ -402,7 +406,7 @@ diff log/p2_errors.txt log/ref/p2_errors_ref.txt</pre>
     <p>The directory tree of your submission should like the following:</p>
     <pre><code>
     |--- src
-    |     |-- tables.c     
+    |     |-- tables.c
     |     |-- tables.h
     |     |-- translate.c
     |     |-- translate.h
@@ -418,8 +422,8 @@ diff log/p2_errors.txt log/ref/p2_errors_ref.txt</pre>
   <h2>Autolab Results</h2>
     <p> tests 1-x stands for results for testcase x.</p>
     <p> test 2-0 stands for the result for memory leak detection. </p>
-  
-	
+
+
 <footer>
 <hr style="clear: both;">
 <div style="float:left">

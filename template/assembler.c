@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "assembler.h"
 #include "src/tables.h"
 #include "src/translate.h"
 #include "src/translate_utils.h"
 #include "src/utils.h"
+
+#include "assembler.h"
 
 const int MAX_ARGS = 3;
 const int BUF_SIZE = 1024;
