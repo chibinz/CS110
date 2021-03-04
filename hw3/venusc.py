@@ -57,7 +57,7 @@ if len(sys.argv) != 2:
 
 inp = sys.argv[1]
 inp_no_ext, ext = os.path.splitext(inp)
-inp_asm = inp_no_ext + ".int"
+inp_asm = inp_no_ext + ".asm"
 inp_trimmed = inp_no_ext + ".S"
 
 if ext != ".c":

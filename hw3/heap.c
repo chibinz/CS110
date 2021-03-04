@@ -1,9 +1,9 @@
 #include "venus.h"
-#define CAPACITY 8
 
-int input[8] = {8, 7, 6, 5, 4, 3, 2, 1};
-int heap[8] = {0};
-int len = 0;
+extern int input[];
+extern int input_len;
+extern int heap[];
+extern int len;
 
 static int parent(int index) { return (index - 1) / 2; }
 
@@ -68,7 +68,7 @@ static void print_heap() {
 }
 
 int main(void) {
-    for (int i = 0; i < CAPACITY; i++) {
+    for (int i = 0; i < input_len; i++) {
         insert(input[i]);
     }
 
