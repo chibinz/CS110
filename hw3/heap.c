@@ -1,4 +1,4 @@
-// #include <stdio.h>
+#include "venus.h"
 #define CAPACITY 8
 
 int input[8] = {8, 7, 6, 5, 4, 3, 2, 1};
@@ -56,11 +56,13 @@ int pop() {
 
     swap(&heap[0], &heap[len]);
     down_heapify(0);
+
+    return ret;
 }
 
 void print_heap() {
     for (int i = 0; i < len; i++) {
-        printf("%d\n", heap[i]);
+        print_int(heap[i]);
     }
 }
 
@@ -69,7 +71,9 @@ int main(void) {
         insert(input[i]);
     }
 
-    printf("%d\n", pop());
+    print_int(pop());
 
     print_heap();
+
+    exit(0);
 }
