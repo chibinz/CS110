@@ -5,19 +5,19 @@ int input[8] = {8, 7, 6, 5, 4, 3, 2, 1};
 int heap[8] = {0};
 int len = 0;
 
-int parent(int index) { return (index - 1) / 2; }
+static int parent(int index) { return (index - 1) / 2; }
 
-int left(int index) { return index * 2 + 1; }
+static int left(int index) { return index * 2 + 1; }
 
-int right(int index) { return index * 2 + 2; }
+static int right(int index) { return index * 2 + 2; }
 
-void swap(int *a, int *b) {
+static void swap(int *a, int *b) {
     int temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void insert(int key) {
+static void insert(int key) {
     int index = len;
     heap[index] = key;
 
@@ -30,7 +30,7 @@ void insert(int key) {
     len += 1;
 }
 
-void down_heapify(int index) {
+static void down_heapify(int index) {
     int l = left(index);
     int r = right(index);
     int min = index;
@@ -49,7 +49,7 @@ void down_heapify(int index) {
     }
 }
 
-int pop() {
+static int pop() {
     int index = 0;
     int ret = heap[0];
     len -= 1;
@@ -60,9 +60,10 @@ int pop() {
     return ret;
 }
 
-void print_heap() {
+static void print_heap() {
     for (int i = 0; i < len; i++) {
         print_int(heap[i]);
+        print_character(' ');
     }
 }
 
@@ -72,6 +73,8 @@ int main(void) {
     }
 
     print_int(pop());
+
+    print_character('\n');
 
     print_heap();
 
