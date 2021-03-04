@@ -1,0 +1,4 @@
+addi x0 x0 0xffffffff
+addi x0 x0 -1
+lui x0 807185
+addi x0 x0 -863
