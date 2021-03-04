@@ -12,64 +12,64 @@ int left(int index) { return index * 2 + 1; }
 int right(int index) { return index * 2 + 2; }
 
 void swap(int *a, int *b) {
-  int temp = *a;
-  *a = *b;
-  *b = temp;
+    int temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
 void insert(int key) {
-  int index = len;
-  heap[index] = key;
+    int index = len;
+    heap[index] = key;
 
-  /* Up heapify */
-  while (index > 0 && heap[parent(index)] > heap[index]) {
-    swap(&heap[parent(index)], &heap[index]);
-    index = parent(index);
-  }
+    /* Up heapify */
+    while (index > 0 && heap[parent(index)] > heap[index]) {
+        swap(&heap[parent(index)], &heap[index]);
+        index = parent(index);
+    }
 
-  len += 1;
+    len += 1;
 }
 
 void down_heapify(int index) {
-  int l = left(index);
-  int r = right(index);
-  int min = index;
+    int l = left(index);
+    int r = right(index);
+    int min = index;
 
-  if (l < len && heap[l] < heap[min]) {
-    min = l;
-  }
+    if (l < len && heap[l] < heap[min]) {
+        min = l;
+    }
 
-  if (r < len && heap[r] < heap[min]) {
-    min = r;
-  }
+    if (r < len && heap[r] < heap[min]) {
+        min = r;
+    }
 
-  if (min != index) {
-    swap(&heap[index], &heap[min]);
-    down_heapify(min);
-  }
+    if (min != index) {
+        swap(&heap[index], &heap[min]);
+        down_heapify(min);
+    }
 }
 
 int pop() {
-  int index = 0;
-  int ret = heap[0];
-  len -= 1;
+    int index = 0;
+    int ret = heap[0];
+    len -= 1;
 
-  swap(&heap[0], &heap[len]);
-  down_heapify(0);
+    swap(&heap[0], &heap[len]);
+    down_heapify(0);
 }
 
 void print_heap() {
-  for (int i = 0; i < len; i++) {
-    printf("%d\n", heap[i]);
-  }
+    for (int i = 0; i < len; i++) {
+        printf("%d\n", heap[i]);
+    }
 }
 
 int main(void) {
-  for (int i = 0; i < CAPACITY; i++) {
-    insert(input[i]);
-  }
+    for (int i = 0; i < CAPACITY; i++) {
+        insert(input[i]);
+    }
 
-  printf("%d\n", pop());
+    printf("%d\n", pop());
 
-  print_heap();
+    print_heap();
 }
