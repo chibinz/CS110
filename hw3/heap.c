@@ -1,4 +1,4 @@
-#ifndef __x86_64__
+#ifdef __x86_64__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,16 +34,19 @@ static void swap(int *a, int *b) {
 }
 
 static void insert(int key) {
+    if (len == 32) {
+        exit(-1);
+    }
+
     int index = len;
     heap[index] = key;
+    len += 1;
 
     /* Up heapify */
     while (index > 0 && heap[parent(index)] > heap[index]) {
         swap(&heap[parent(index)], &heap[index]);
         index = parent(index);
     }
-
-    len += 1;
 }
 
 static void down_heapify(int index) {
@@ -66,6 +69,10 @@ static void down_heapify(int index) {
 }
 
 static void pop() {
+    if (len == 0) {
+        exit(-1);
+    }
+
     putint(heap[0]);
     putchar('\n');
 
@@ -83,7 +90,7 @@ static void print_heap() {
     putchar('\n');
 }
 
-int main(void) {
+int main() {
     for (int i = 0; i < input_len; i++) {
         switch (input[i]) {
         case -1:
