@@ -1,9 +1,25 @@
+#ifndef __x86_64__
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int input[6] = {0, 1, 2, 3, -1, -2};
+int input_len = 6;
+int heap[32] = {0};
+int len = 0;
+
+void putint(int a) { printf("%d", a); }
+
+#else
+
 #include "venus.h"
 
 extern int input[];
 extern int input_len;
 extern int heap[];
 extern int len;
+
+#endif
 
 static int parent(int index) { return (index - 1) / 2; }
 
@@ -70,14 +86,14 @@ static void print_heap() {
 int main(void) {
     for (int i = 0; i < input_len; i++) {
         switch (input[i]) {
-            case -1:
-                pop();
-                break;
-            case -2:
-                print_heap();
-                break;
-            default:
-                insert(input[i]);
+        case -1:
+            pop();
+            break;
+        case -2:
+            print_heap();
+            break;
+        default:
+            insert(input[i]);
         }
     }
 
