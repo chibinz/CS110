@@ -1,0 +1,4 @@
+addi t1 x0 1234
+lui t2 912092
+addi t2 t2 -273
+add x0 x0 x0

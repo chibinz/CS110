@@ -16,4 +16,5 @@ do
 		diff -Z ../out/ref/${name}_ref.int ../out/$name.int
 		diff -Z ../out/ref/${name}_ref.out ../out/$name.out
 	fi
+	# ../run-valgrind ../assembler $name.s ../out/$name.int ../out/$name.out -log ../log/$name.txt
 done
