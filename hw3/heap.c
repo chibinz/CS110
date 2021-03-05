@@ -49,34 +49,37 @@ static void down_heapify(int index) {
     }
 }
 
-static int pop() {
-    int index = 0;
-    int ret = heap[0];
+static void pop() {
+    putint(heap[0]);
+    putchar('\n');
+
     len -= 1;
+    heap[0] = heap[len];
 
-    swap(&heap[0], &heap[len]);
     down_heapify(0);
-
-    return ret;
 }
 
 static void print_heap() {
     for (int i = 0; i < len; i++) {
-        print_int(heap[i]);
-        print_character(' ');
+        putint(heap[i]);
+        putchar(' ');
     }
+    putchar('\n');
 }
 
 int main(void) {
     for (int i = 0; i < input_len; i++) {
-        insert(input[i]);
+        switch (input[i]) {
+            case -1:
+                pop();
+                break;
+            case -2:
+                print_heap();
+                break;
+            default:
+                insert(input[i]);
+        }
     }
-
-    print_int(pop());
-
-    print_character('\n');
-
-    print_heap();
 
     exit(0);
 }

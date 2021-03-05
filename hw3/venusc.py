@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/env python
 # Trim unsupported assembly directives
 
 import os
@@ -18,7 +18,7 @@ erase_set = {
     r"\.Lfunc_end",
 
     # Obtuse comments
-    r"# %.*",
+    r"# %",
     r"#APP",
     r"#NO_APP",
 
