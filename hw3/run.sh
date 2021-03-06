@@ -18,9 +18,9 @@ do
 done
 
 cd output
-for f in *.out
+for f in *.ref
 do
-    name=$(echo $f | sed -E "s/(.+)\.out/\1/g")
+    name=$(echo $f | sed -E "s/(.+)\.ref/\1/g")
     if test $build -eq 0
     then
         echo "$name: 0"
