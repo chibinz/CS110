@@ -1,11 +1,11 @@
 .data
 .globl	input
 input:
-	.word	0 1 2 3 -2
+	.word	0 1 2 3
 
 .globl  input_len
 input_len:
-        .word   5
+        .word   4
 
 .globl	heap
 heap:

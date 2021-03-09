@@ -25,7 +25,7 @@ do
     then
         echo "$name: 0"
     else
-        if diff -Z $name.out $name.ref > /dev/null 2> /dev/null
+        if diff -w -B $name.out $name.ref > /dev/null 2> /dev/null
         then
             echo "$name: 1"
         else

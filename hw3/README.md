@@ -4,7 +4,7 @@
 [HW2](../2/) HW3 [HW4](../4/)
 
 ## Introduction
-In this homework, you will implement a binary min heap in RISC-V assembly. Here is a [very simple template](./template.tar) to begin with.
+In this homework, you will implement a [binary min heap](https://en.wikipedia.org/wiki/Binary_heap) with insert and pop operations in RISC-V assembly. Here is a [very simple template](./template.tar) to begin with.
 
 ### Input
 A reference input is already provided to you in the `input.S` file. Input is provided to you in binary format to alleviate the burden of parsing and dealing with Venus's expermintal file system. There are basically 3 operations that you need to support, `insert`, `pop`, and `print_heap`, described in the comment below. Since this is a computer architecture course, we will not go into the details of how a binary heap works. Refer to your Data Structure course if in doubt.
