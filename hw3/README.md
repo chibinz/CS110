@@ -61,11 +61,12 @@ Exited with error code 0
 
 The command that we use to test your program's correctness is
 ```sh
-diff -Z <your_output> <reference_output>
+diff <your_output> <reference_output>
 ```
-The `-Z` flag ignores trailing whitespace, so don't worry about it.
+You can also test your result using this command. Be sure to calculate your `reference_output` correctly!
 
 ## Running
+
 Make sure that `heap.S` and `input.S` reside in the same directory. To run your program locally
 ```sh
 java -jar venus-jvm-latest.jar heap.S
@@ -74,6 +75,12 @@ java -jar venus-jvm-latest.jar heap.S
 To debug your program online, you might want to replace `.import input.S` in heap.S with the content of input.S.
 
 ## Tips
+
+- To interact with the input file, you can use the global labels defined in `input.S`. For example, you can get the `input_len` with the following code:
+
+  ```c
+  la	a7, input_len
+  ```
 
 - Handwritten assembly are postfixed with extension `.S` to distinguish from compiler generated assembly `.s`
 - While being a strong proponent for python's cult of `space`, I suggest you indent using `tab`s. Set your editor's tabwidth to 8 for best visual experience.
@@ -84,9 +91,7 @@ To debug your program online, you might want to replace `.import input.S` in hea
 
 ## Execution
 
-We will test your program using RISC-V emulator
-[venus](http://autolab.sist.shanghaitech.edu.cn/venus/). You probably want to read
-[this](https://github.com/kvakil/venus/wiki) before you started.
+We will test your program using RISC-V emulator [venus](http://autolab.sist.shanghaitech.edu.cn/venus/). You probably want to read [this](https://github.com/kvakil/venus/wiki) before you started.
 
 ## Submission
 
