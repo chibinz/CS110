@@ -1,0 +1,7 @@
+addi a0 x0 10
+addi a1 x0 -2048
+addi a2 x0 800
+addi a3 x0 0xAB
+bge t3 a0 label1
+bge sp a1 label2
+addi a2 a3 0

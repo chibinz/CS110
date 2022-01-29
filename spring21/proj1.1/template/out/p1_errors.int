@@ -1,0 +1,9 @@
+or a2 a3 t0
+jalr zero t1 0
+slt t2 t2 s0
+lui t3 123
+jal ra label
+ori t3 t2 0xABC
+addiu t3 99 3
+ori t1 t0 0xFFFFFFFF
+bne t0 t1 not_found

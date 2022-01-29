@@ -1,0 +1,16 @@
+.data
+.globl	input
+input:
+	.word	
+
+.globl  input_len
+input_len:
+        .word   0
+
+.globl	heap
+heap:
+	.word	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+.globl	len
+len:
+	.word	0

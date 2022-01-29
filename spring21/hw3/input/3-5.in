@@ -1,0 +1,16 @@
+.data
+.globl	input
+input:
+	.word	0 1 100 301 101 -1 -1 -2 10000 2355 4 67 -1 -2 45 34 78 9 -1 -2 -1 -2 1345 4678 7 8 861 -1 -2 -1 -2 6489 980 250 -1 -2 3746 4986 -1 -1 -1 -2
+
+.globl  input_len
+input_len:
+        .word   42
+
+.globl	heap
+heap:
+	.word	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+.globl	len
+len:
+	.word	0
